@@ -310,8 +310,8 @@ label {
 }
 
 .hero {
-  background: var(--soft-black);
-  color: var(--bone);
+  background: var(--ghostly-blue);
+  color: var(--soft-black);
   padding: 3.5rem 0;
   text-align: center;
 }
