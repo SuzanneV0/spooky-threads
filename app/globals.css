@@ -324,6 +324,18 @@ label {
   margin: 0 auto 1.5rem;
 }
 
+.hero-banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .hero-banner {
+    aspect-ratio: 16 / 10;
+  }
+}
+
 .home-row {
   padding: 2.5rem 0;
 }
