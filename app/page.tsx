@@ -1,16 +1,25 @@
-import ProductCard from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import ProductRow from "@/components/ProductRow";
+import { getProductsByThemeSlug } from "@/lib/queries";
 
-export default function Home() {
+export default async function Home() {
+  const [newArrivals, halloween, fall] = await Promise.all([
+    getProductsByThemeSlug("new"),
+    getProductsByThemeSlug("halloween"),
+    getProductsByThemeSlug("fall"),
+  ]);
+
   return (
-    <main className="container">
-      <h1>🎃 Spooky Threads</h1>
-      <p>Halloween apparel, cursed to look this good.</p>
-      <div className="grid">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    </main>
+    <>
+      <section className="hero">
+        <div className="container">
+          <h1>🎃 Spooky Threads</h1>
+          <p>Halloween apparel and home goods, cursed to look this good all season long.</p>
+        </div>
+      </section>
+
+      <ProductRow title="New Arrivals" href="/collections/new" products={newArrivals} />
+      <ProductRow title="Halloween Must-Haves" href="/collections/halloween" products={halloween} />
+      <ProductRow title="Cozy Fall Favorites" href="/collections/fall" products={fall} />
+    </>
   );
 }
