@@ -278,6 +278,13 @@ label {
   width: 100%;
   height: auto;
 }
+.product-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--color-surface);
+}
 .product-card-badge {
   position: absolute;
   top: 0.6rem;
@@ -356,7 +363,8 @@ label {
   gap: 2.5rem;
   padding: 3rem 1.25rem;
 }
-.product-detail-art svg {
+.product-detail-art svg,
+.product-detail-art .product-photo {
   width: 100%;
   border-radius: 16px;
 }
@@ -471,7 +479,8 @@ label {
   gap: 1rem;
   padding: 0.8rem 1rem;
 }
-.cart-line-art svg {
+.cart-line-art svg,
+.cart-line-art .product-photo {
   width: 64px;
   border-radius: 8px;
   display: block;

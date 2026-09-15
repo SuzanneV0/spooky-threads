@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import ProductArt from "@/components/ProductArt";
+import ProductPhoto from "@/components/ProductPhoto";
 import { useCart } from "@/components/CartProvider";
 import type { Product } from "@/lib/queries";
 
@@ -11,7 +11,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="card product-card">
       <Link href={`/products/${product.slug}`} className="product-card-art">
-        <ProductArt slug={product.slug} productType={product.product_type} />
+        <ProductPhoto slug={product.slug} productType={product.product_type} name={product.name} />
         {product.is_new && <span className="tag product-card-badge">New</span>}
       </Link>
       <div className="product-card-body">

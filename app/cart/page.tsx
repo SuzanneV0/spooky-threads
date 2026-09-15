@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/CartProvider";
-import ProductArt from "@/components/ProductArt";
+import ProductPhoto from "@/components/ProductPhoto";
 
 export default function CartPage() {
   const { lines, subtotalCents, setQuantity, removeItem } = useCart();
@@ -23,7 +23,7 @@ export default function CartPage() {
         {lines.map((line) => (
           <li key={line.productId} className="card cart-line">
             <div className="cart-line-art">
-              <ProductArt slug={line.slug} productType={line.productType} />
+              <ProductPhoto slug={line.slug} productType={line.productType} name={line.name} sizes="64px" />
             </div>
             <div className="cart-line-info">
               <Link href={`/products/${line.slug}`}>{line.name}</Link>

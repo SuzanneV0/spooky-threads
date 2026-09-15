@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ProductArt from "@/components/ProductArt";
+import ProductPhoto from "@/components/ProductPhoto";
 import ProductActions from "@/components/ProductActions";
 import ReviewSection from "@/components/ReviewSection";
 import { getProductBySlug, getReviewsForProduct } from "@/lib/queries";
@@ -20,7 +20,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <div className="container product-detail">
       <div className="product-detail-art">
-        <ProductArt slug={product.slug} productType={product.product_type} />
+        <ProductPhoto slug={product.slug} productType={product.product_type} name={product.name} sizes="(max-width: 768px) 100vw, 380px" />
       </div>
 
       <div className="product-detail-info">
