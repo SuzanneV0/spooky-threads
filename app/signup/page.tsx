@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -69,6 +70,10 @@ export default function SignupPage() {
         <button className="button" type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"}
         </button>
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+        <GoogleSignInButton />
         <p className="auth-switch">
           Already have an account? <Link href="/login">Log in</Link>
         </p>
