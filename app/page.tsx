@@ -25,7 +25,7 @@ export default async function Home() {
           fill
           priority
           sizes="100vw"
-          style={{ objectFit: "cover", objectPosition: "center 42%" }}
+          style={{ objectFit: "cover", objectPosition: "center 55%" }}
         />
       </section>
 
