@@ -42,7 +42,8 @@ a {
 }
 
 h1, h2, h3, h4 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-ultra), Georgia, "Times New Roman", serif;
+  font-weight: 400;
   margin: 0 0 0.5rem;
 }
 
@@ -161,9 +162,9 @@ label {
   flex-wrap: wrap;
 }
 .logo {
-  font-family: Georgia, serif;
+  font-family: var(--font-ultra), Georgia, serif;
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 400;
   text-decoration: none;
   color: var(--color-header-text);
   margin-right: auto;
@@ -254,7 +255,7 @@ label {
   text-decoration: underline;
 }
 .footer-brand {
-  font-family: Georgia, serif;
+  font-family: var(--font-ultra), Georgia, serif;
   font-size: 1.1rem;
 }
 .footer-copy {
