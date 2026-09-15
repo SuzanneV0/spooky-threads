@@ -3,7 +3,7 @@ import { getProductsByThemeSlug } from "@/lib/queries";
 
 export default async function Home() {
   const [newArrivals, halloween, fall] = await Promise.all([
-    getProductsByThemeSlug("new"),
+    getProductsByThemeSlug("new", 10),
     getProductsByThemeSlug("halloween"),
     getProductsByThemeSlug("fall"),
   ]);
