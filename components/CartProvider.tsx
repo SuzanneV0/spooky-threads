@@ -71,7 +71,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLines((prev) => prev.filter((l) => l.productId !== productId));
   }, []);
 
-  const clear = useCallback(() => setLines([]), []);
+  const clear = useCallback(() => {
+    setLines([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // storage unavailable; in-memory cart is still cleared for this page view
+    }
+  }, []);
 
   const count = lines.reduce((sum, l) => sum + l.quantity, 0);
   const subtotalCents = lines.reduce((sum, l) => sum + l.quantity * l.priceCents, 0);
