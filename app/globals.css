@@ -302,6 +302,12 @@ label {
   color: var(--color-text);
   font-weight: 600;
   font-size: 0.95rem;
+  line-height: 1.25rem;
+  min-height: 2.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 .product-card-price {
   margin: 0;
