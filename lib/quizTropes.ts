@@ -8,6 +8,7 @@ export type TropeSlug =
 export type Trope = {
   slug: TropeSlug;
   name: string;
+  plural: string;
   emoji: string;
   description: string;
 };
@@ -16,6 +17,7 @@ export const tropes: Record<TropeSlug, Trope> = {
   "magical-witches": {
     slug: "magical-witches",
     name: "The Witch",
+    plural: "witches",
     emoji: "🔮",
     description:
       "You're the brains of every gathering, always got a trick up your sleeve (and maybe a potion, too). People come to you when they need something figured out.",
@@ -23,6 +25,7 @@ export const tropes: Record<TropeSlug, Trope> = {
   "spooky-ghosts": {
     slug: "spooky-ghosts",
     name: "The Ghost",
+    plural: "ghosts",
     emoji: "👻",
     description:
       "Mysterious, a little dramatic, and impossible to pin down. You haunt every room you walk into — in the best way.",
@@ -30,6 +33,7 @@ export const tropes: Record<TropeSlug, Trope> = {
   "bats-and-cats": {
     slug: "bats-and-cats",
     name: "The Black Cat",
+    plural: "black cats",
     emoji: "🐈‍⬛",
     description:
       "Independent, a little mischievous, and probably the reason something went missing. You do things on your own schedule.",
@@ -37,6 +41,7 @@ export const tropes: Record<TropeSlug, Trope> = {
   "cute-pumpkins": {
     slug: "cute-pumpkins",
     name: "The Jack-o'-Lantern",
+    plural: "jack-o'-lanterns",
     emoji: "🎃",
     description:
       "Warm, glowing, and welcoming — everyone wants you on their porch. You're the reason the party feels cozy.",
@@ -44,6 +49,7 @@ export const tropes: Record<TropeSlug, Trope> = {
   "monsters-galore": {
     slug: "monsters-galore",
     name: "The Monster",
+    plural: "monsters",
     emoji: "🧟",
     description:
       "Big energy, big heart, not actually scary once people get to know you. You show up loud and leave a lasting impression.",

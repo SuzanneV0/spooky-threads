@@ -105,7 +105,7 @@ export default function QuizExperience() {
 
         {recommended && recommended.length > 0 && (
           <div className="quiz-recommendations">
-            <h3>Picks for {trope.name.toLowerCase()}s</h3>
+            <h3>Picks for {trope.plural}</h3>
             <div className="grid cols-4">
               {recommended.map((product) => (
                 <ProductCard key={product.id} product={product} />
