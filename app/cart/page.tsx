@@ -1,11 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import ProductPhoto from "@/components/ProductPhoto";
 
 export default function CartPage() {
+  const { user } = useAuth();
   const { lines, subtotalCents, setQuantity, removeItem } = useCart();
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  async function checkout() {
+    setCheckingOut(true);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setCheckoutError(data.error ?? "Something went wrong starting checkout.");
+        setCheckingOut(false);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setCheckoutError("Something went wrong starting checkout.");
+      setCheckingOut(false);
+    }
+  }
 
   if (lines.length === 0) {
     return (
@@ -53,9 +82,16 @@ export default function CartPage() {
 
       <div className="cart-summary">
         <p>Subtotal: <strong>${(subtotalCents / 100).toFixed(2)}</strong></p>
-        <button className="button" disabled title="Stripe checkout is coming in the course">
-          Checkout (coming soon)
-        </button>
+        {checkoutError && <p className="form-error">{checkoutError}</p>}
+        {user ? (
+          <button className="button" onClick={checkout} disabled={checkingOut}>
+            {checkingOut ? "Redirecting…" : "Checkout"}
+          </button>
+        ) : (
+          <Link href="/login" className="button">
+            Log in to checkout
+          </Link>
+        )}
       </div>
     </div>
   );

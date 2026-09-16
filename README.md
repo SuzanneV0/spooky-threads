@@ -6,7 +6,7 @@ A Halloween-themed apparel and home goods shop, built as a practice project for 
 
 - [Next.js](https://nextjs.org/) (App Router, TypeScript)
 - [Supabase](https://supabase.com/) — database, auth, and admin backend
-- [Stripe](https://stripe.com/docs) for checkout/payments (not yet wired up)
+- [Stripe](https://stripe.com/docs) Checkout for payments
 - [Anthropic API](https://docs.claude.com/) (`@anthropic-ai/sdk`, Claude Haiku 4.5) for the shopping assistant chatbot
 
 ## Getting started
@@ -16,13 +16,18 @@ npm install
 npm run dev
 ```
 
-`.env.local` already has the Supabase project URL and anon key filled in. Add your own `ANTHROPIC_API_KEY` (create one at [console.anthropic.com](https://console.anthropic.com) — new accounts get a small free credit) to turn on the chat assistant, and your Stripe keys when you get to that lesson.
+`.env.local` already has the Supabase project URL and anon key filled in. Add your own `ANTHROPIC_API_KEY` (create one at [console.anthropic.com](https://console.anthropic.com) — new accounts get a small free credit) to turn on the chat assistant.
+
+Checkout needs three more values in `.env.local`:
+- `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` — from the [Stripe dashboard](https://dashboard.stripe.com/test/apikeys) (test mode)
+- `STRIPE_WEBHOOK_SECRET` — run `stripe listen --forward-to localhost:3000/api/webhooks/stripe` locally to get one, or add a webhook endpoint in the Stripe dashboard pointing at `<your-deployed-url>/api/webhooks/stripe` (subscribed to `checkout.session.completed`) and use the signing secret it gives you
+- `SUPABASE_SERVICE_ROLE_KEY` — from Supabase → Project Settings → API. Used only by the webhook handler (`lib/supabase/admin.ts`) to write the order after payment succeeds, since Stripe calls that route with no logged-in session.
 
 ## What's built
 
 - **Storefront**: home page with 3 product rows, full nav (Collections, Women, Men, Accessories, Home Decor) matching the site's collection structure, 22 collections seeded across themes/categories/departments, 33 sample products with fake pricing and hand-illustrated SVG art in the brand color palette (`app/globals.css`, `lib/productArt.ts`).
 - **Product pages**: quantity selector, add to cart, save for later, add to wishlist, wash instructions, and a reviews/ratings section.
-- **Cart**: guest cart stored in the browser (`components/CartProvider.tsx`) — checkout button is a placeholder until Stripe is wired up.
+- **Cart**: guest cart stored in the browser (`components/CartProvider.tsx`). Checkout requires being logged in, creates a Stripe Checkout Session (`app/api/checkout/route.ts`) with prices looked up server-side (never trusts the client), and a webhook (`app/api/webhooks/stripe/route.ts`) creates the `orders`/`order_items` rows once payment completes.
 - **Accounts**: sign up / log in via Supabase Auth, with an account area for saved items, wishlist, addresses, and order history (`app/account/*`).
 - **Admin**: `/admin` (gated to accounts with `is_admin = true` on their profile) for managing products and order statuses.
 - **Static pages**: About, Privacy Policy, Cookies, Shipping Information, Order Information, Return Policy.
@@ -50,6 +55,6 @@ update profiles set is_admin = true where id = (select id from auth.users where 
 ## Roadmap
 
 - [x] Wire up an AI shopping assistant (`app/api/chat/route.ts`)
-- [ ] Wire up Stripe Checkout (`app/api/checkout/route.ts`) and move the cart to real checkout
-- [ ] Stripe webhook handling to create real `orders` rows
+- [x] Wire up Stripe Checkout (`app/api/checkout/route.ts`) and move the cart to real checkout
+- [x] Stripe webhook handling to create real `orders` rows
 - [ ] Replace illustrated SVG product art with real photography
