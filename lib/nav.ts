@@ -53,6 +53,11 @@ export const mainNav: NavSection[] = [
     href: "/subscriptions",
     items: [],
   },
+  {
+    label: "Quiz",
+    href: "/quiz",
+    items: [],
+  },
 ];
 
 export const footerLinks: NavItem[] = [

@@ -271,18 +271,21 @@ export type Database = {
         Row: {
           created_at: string
           full_name: string | null
+          halloween_trope: string | null
           id: string
           is_admin: boolean
         }
         Insert: {
           created_at?: string
           full_name?: string | null
+          halloween_trope?: string | null
           id: string
           is_admin?: boolean
         }
         Update: {
           created_at?: string
           full_name?: string | null
+          halloween_trope?: string | null
           id?: string
           is_admin?: boolean
         }

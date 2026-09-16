@@ -4,7 +4,12 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile = { id: string; full_name: string | null; is_admin: boolean };
+type Profile = {
+  id: string;
+  full_name: string | null;
+  is_admin: boolean;
+  halloween_trope: string | null;
+};
 
 type AuthContextValue = {
   user: User | null;
@@ -35,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (currentUser) {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, full_name, is_admin")
+        .select("id, full_name, is_admin, halloween_trope")
         .eq("id", currentUser.id)
         .single();
       setProfile(profileData);
