@@ -1,6 +1,9 @@
 import StaticPage from "@/components/StaticPage";
 
-export const metadata = { title: "Order Information — Spooky Threads" };
+export const metadata = {
+  title: "Order Information",
+  description: "How to track, change, or cancel an order placed with Spooky Threads.",
+};
 
 export default function OrderInformationPage() {
   return (

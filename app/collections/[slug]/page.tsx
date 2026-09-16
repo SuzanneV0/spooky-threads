@@ -1,12 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { getProductsForCollectionSlug } from "@/lib/queries";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
-  const { collection } = await getProductsForCollectionSlug(slug);
-  return { title: collection ? `${collection.name} — Spooky Threads` : "Collection — Spooky Threads" };
+  const { collection, products } = await getProductsForCollectionSlug(slug);
+
+  if (!collection) return { title: "Collection" };
+
+  const description = `Shop ${collection.name} at Spooky Threads — ${products.length} Halloween ${
+    products.length === 1 ? "item" : "items"
+  } including apparel and home goods.`;
+
+  return {
+    title: collection.name,
+    description,
+    alternates: { canonical: `/collections/${slug}` },
+    openGraph: { title: collection.name, description, url: `/collections/${slug}` },
+  };
 }
 
 export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {

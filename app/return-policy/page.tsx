@@ -1,6 +1,9 @@
 import StaticPage from "@/components/StaticPage";
 
-export const metadata = { title: "Return Policy — Spooky Threads" };
+export const metadata = {
+  title: "Return Policy",
+  description: "Spooky Threads' return and exchange policy.",
+};
 
 export default function ReturnPolicyPage() {
   return (

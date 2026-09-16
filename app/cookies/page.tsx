@@ -1,6 +1,9 @@
 import StaticPage from "@/components/StaticPage";
 
-export const metadata = { title: "Cookies — Spooky Threads" };
+export const metadata = {
+  title: "Cookie Policy",
+  description: "How Spooky Threads uses cookies on this site.",
+};
 
 export default function CookiesPage() {
   return (

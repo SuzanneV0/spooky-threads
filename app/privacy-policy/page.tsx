@@ -1,6 +1,9 @@
 import StaticPage from "@/components/StaticPage";
 
-export const metadata = { title: "Privacy Policy — Spooky Threads" };
+export const metadata = {
+  title: "Privacy Policy",
+  description: "How Spooky Threads collects, uses, and protects your information.",
+};
 
 export default function PrivacyPolicyPage() {
   return (

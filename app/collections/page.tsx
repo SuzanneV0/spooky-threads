@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getAllCollections } from "@/lib/queries";
 
-export const metadata = { title: "Collections — Spooky Threads" };
+export const metadata = {
+  title: "Collections",
+  description: "Browse all Spooky Threads collections — Halloween themes, seasonal favorites, and shop by type.",
+};
 
 export default async function CollectionsIndex() {
   const collections = await getAllCollections();

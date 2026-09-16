@@ -1,6 +1,9 @@
 import StaticPage from "@/components/StaticPage";
 
-export const metadata = { title: "About — Spooky Threads" };
+export const metadata = {
+  title: "About",
+  description: "The story behind Spooky Threads — Halloween-obsessed apparel and home goods.",
+};
 
 export default function AboutPage() {
   return (
