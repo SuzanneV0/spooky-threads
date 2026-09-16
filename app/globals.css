@@ -343,6 +343,74 @@ label {
   }
 }
 
+.pricing-section {
+  padding: 3rem 0 4rem;
+}
+.pricing-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: start;
+}
+.pricing-card {
+  position: relative;
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+.pricing-card-featured {
+  border-color: var(--color-secondary);
+  box-shadow: 0 10px 30px rgba(25, 23, 28, 0.12);
+}
+.pricing-badge {
+  position: absolute;
+  top: -0.7rem;
+  left: 1.75rem;
+}
+.pricing-name {
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
+}
+.pricing-price {
+  font-family: var(--font-ultra), Georgia, serif;
+  font-size: 2.4rem;
+  margin: 0 0 0.5rem;
+}
+.pricing-cadence {
+  font-family: "Avenir Next", system-ui, -apple-system, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-muted-text);
+  margin-left: 0.2rem;
+}
+.pricing-tagline {
+  color: var(--color-muted-text);
+  margin: 0 0 1.25rem;
+}
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-grow: 1;
+}
+.pricing-features li {
+  font-size: 0.9rem;
+  padding-left: 1.4rem;
+  position: relative;
+}
+.pricing-features li::before {
+  content: "🎃";
+  position: absolute;
+  left: 0;
+  top: -0.05rem;
+  font-size: 0.85rem;
+}
+.pricing-cta {
+  text-decoration: none;
+  width: 100%;
+}
+
 .home-row {
   padding: 2.5rem 0;
 }

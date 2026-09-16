@@ -20,13 +20,15 @@ export default function Header() {
           {mainNav.map((section) => (
             <div className="nav-item" key={section.label}>
               <Link href={section.href}>{section.label}</Link>
-              <div className="dropdown">
-                {section.items.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
+              {section.items.length > 0 && (
+                <div className="dropdown">
+                  {section.items.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>

@@ -48,6 +48,11 @@ export const mainNav: NavSection[] = [
     href: "/collections/home-decor",
     items: [{ label: "Blankets", href: "/collections/blankets" }],
   },
+  {
+    label: "Subscriptions",
+    href: "/subscriptions",
+    items: [],
+  },
 ];
 
 export const footerLinks: NavItem[] = [
