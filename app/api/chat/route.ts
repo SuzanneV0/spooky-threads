@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
 import { getProductCatalogForAssistant } from "@/lib/queries";
 import { SITE_NAME } from "@/lib/site";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-function buildSystemInstruction(catalog: Awaited<ReturnType<typeof getProductCatalogForAssistant>>) {
+function buildSystemPrompt(catalog: Awaited<ReturnType<typeof getProductCatalogForAssistant>>) {
   const productLines = catalog
     .map((p) => `- ${p.name}${p.is_new ? " (new)" : ""} — $${(p.price_cents / 100).toFixed(2)} — ${p.product_type} — slug: ${p.slug}`)
     .join("\n");
@@ -21,10 +21,10 @@ This is a practice storefront built for a course, so checkout isn't live yet —
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json({
-      reply: "The shopping assistant isn't configured yet — add a GEMINI_API_KEY to .env.local to turn it on.",
+      reply: "The shopping assistant isn't configured yet — add an ANTHROPIC_API_KEY to .env.local to turn it on.",
     });
   }
 
@@ -34,23 +34,20 @@ export async function POST(request: Request) {
   }
 
   const catalog = await getProductCatalogForAssistant();
-  const ai = new GoogleGenAI({ apiKey });
+  const anthropic = new Anthropic({ apiKey });
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-latest",
-      contents: messages.map((m) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      })),
-      config: {
-        systemInstruction: buildSystemInstruction(catalog),
-      },
+    const response = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 512,
+      system: buildSystemPrompt(catalog),
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
     });
 
-    return NextResponse.json({ reply: response.text ?? "Sorry, I didn't catch that — could you try again?" });
+    const reply = response.content.find((block) => block.type === "text")?.text;
+    return NextResponse.json({ reply: reply ?? "Sorry, I didn't catch that — could you try again?" });
   } catch (error) {
-    console.error("Gemini chat error:", error);
+    console.error("Claude chat error:", error);
     return NextResponse.json(
       { reply: "Something went wrong reaching the assistant. Please try again in a moment." },
       { status: 502 }
