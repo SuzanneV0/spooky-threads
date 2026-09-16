@@ -425,7 +425,7 @@ label {
 .quiz-reveal-text {
   color: var(--color-muted-text);
   font-size: 0.9rem;
-  margin: 0 0 2rem;
+  margin: 0 0 3rem;
 }
 .quiz-reveal-track {
   position: relative;
@@ -448,7 +448,7 @@ label {
   position: absolute;
   top: 50%;
   left: 0%;
-  transform: translate(-50%, -60%);
+  transform: translate(-50%, -2.2rem);
   animation: quiz-reveal-fly 1.8s ease forwards;
 }
 .quiz-reveal-witch-figure {
@@ -477,14 +477,14 @@ label {
 @keyframes quiz-reveal-fly {
   0% {
     left: 0%;
-    transform: translate(-50%, -60%) rotate(-8deg);
+    transform: translate(-50%, -2.2rem) rotate(-8deg);
   }
   50% {
-    transform: translate(-50%, -85%) rotate(4deg);
+    transform: translate(-50%, -2.8rem) rotate(4deg);
   }
   100% {
     left: 100%;
-    transform: translate(-50%, -60%) rotate(-8deg);
+    transform: translate(-50%, -2.2rem) rotate(-8deg);
   }
 }
 .quiz-progress {
