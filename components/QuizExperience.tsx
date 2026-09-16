@@ -39,6 +39,8 @@ export default function QuizExperience() {
   const [result, setResult] = useState<TropeSlug | null>(null);
   const [recommended, setRecommended] = useState<Product[] | null>(null);
   const [saved, setSaved] = useState(false);
+  const [revealing, setRevealing] = useState(false);
+  const [pendingResult, setPendingResult] = useState<TropeSlug | null>(null);
 
   useEffect(() => {
     const savedTrope = profile?.halloween_trope as TropeSlug | null | undefined;
@@ -56,7 +58,7 @@ export default function QuizExperience() {
     fetchRecommendations(result).then(setRecommended);
   }, [result]);
 
-  async function selectOption(trope: TropeSlug) {
+  function selectOption(trope: TropeSlug) {
     const nextAnswers = [...answers, trope];
 
     if (questionIndex + 1 < quizQuestions.length) {
@@ -65,11 +67,17 @@ export default function QuizExperience() {
       return;
     }
 
-    const winner = tallyResult(nextAnswers);
-    setResult(winner);
+    setPendingResult(tallyResult(nextAnswers));
+    setRevealing(true);
+  }
+
+  async function finishReveal() {
+    setRevealing(false);
+    if (!pendingResult) return;
+    setResult(pendingResult);
 
     if (user) {
-      await supabase.from("profiles").update({ halloween_trope: winner }).eq("id", user.id);
+      await supabase.from("profiles").update({ halloween_trope: pendingResult }).eq("id", user.id);
       await refresh();
       setSaved(true);
     }
@@ -80,6 +88,22 @@ export default function QuizExperience() {
     setAnswers([]);
     setResult(null);
     setSaved(false);
+    setRevealing(false);
+    setPendingResult(null);
+  }
+
+  if (revealing) {
+    return (
+      <div className="card quiz-reveal">
+        <p className="quiz-reveal-text">Consulting the crystal ball…</p>
+        <div className="quiz-reveal-track">
+          <span className="quiz-reveal-witch" onAnimationEnd={finishReveal}>
+            <span className="quiz-reveal-witch-figure">🧙‍♀️</span>
+            <span className="quiz-reveal-broom">🧹</span>
+          </span>
+        </div>
+      </div>
+    );
   }
 
   if (result) {

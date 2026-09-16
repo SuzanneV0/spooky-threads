@@ -418,6 +418,75 @@ label {
 .quiz-card {
   padding: 2rem;
 }
+.quiz-reveal {
+  padding: 3.5rem 2rem;
+  text-align: center;
+}
+.quiz-reveal-text {
+  color: var(--color-muted-text);
+  font-size: 0.9rem;
+  margin: 0 0 2rem;
+}
+.quiz-reveal-track {
+  position: relative;
+  height: 4px;
+  margin: 0 1.5rem;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: visible;
+}
+.quiz-reveal-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  animation: quiz-reveal-fill 1.8s ease forwards;
+}
+.quiz-reveal-witch {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -60%);
+  animation: quiz-reveal-fly 1.8s ease forwards;
+}
+.quiz-reveal-witch-figure {
+  position: relative;
+  z-index: 2;
+  display: block;
+  font-size: 1.6rem;
+}
+.quiz-reveal-broom {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 60%;
+  display: block;
+  font-size: 1.3rem;
+  transform: translateX(-50%) rotate(-35deg);
+}
+@keyframes quiz-reveal-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes quiz-reveal-fly {
+  0% {
+    left: 0%;
+    transform: translate(-50%, -60%) rotate(-8deg);
+  }
+  50% {
+    transform: translate(-50%, -85%) rotate(4deg);
+  }
+  100% {
+    left: 100%;
+    transform: translate(-50%, -60%) rotate(-8deg);
+  }
+}
 .quiz-progress {
   font-size: 0.8rem;
   font-weight: 600;
