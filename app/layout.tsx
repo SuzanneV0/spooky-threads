@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Ultra } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -50,6 +51,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={ultra.variable}>
       <body>
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="805b5da8-676d-4e0e-85c0-cd270a117465"
+        />
         <AuthProvider>
           <CartProvider>
             <Header />
