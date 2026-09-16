@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { CartProvider } from "@/components/CartProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const ultra = Ultra({
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <main>{children}</main>
             <Footer />
+            <ChatWidget />
           </CartProvider>
         </AuthProvider>
       </body>

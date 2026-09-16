@@ -92,3 +92,12 @@ export async function getAllCollections() {
   const { data } = await supabase.from("collections").select("*").order("sort_order");
   return data ?? [];
 }
+
+export async function getProductCatalogForAssistant() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("name, slug, price_cents, product_type, description, is_new")
+    .order("name");
+  return data ?? [];
+}

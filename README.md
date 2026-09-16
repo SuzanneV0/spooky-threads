@@ -7,7 +7,7 @@ A Halloween-themed apparel and home goods shop, built as a practice project for 
 - [Next.js](https://nextjs.org/) (App Router, TypeScript)
 - [Supabase](https://supabase.com/) — database, auth, and admin backend
 - [Stripe](https://stripe.com/docs) for checkout/payments (not yet wired up)
-- An LLM API (OpenAI or Claude) for the shopping assistant chatbot (not yet wired up)
+- [Gemini API](https://ai.google.dev/) (`@google/genai`) for the shopping assistant chatbot
 
 ## Getting started
 
@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-`.env.local` already has the Supabase project URL and anon key filled in. Add your Stripe and OpenAI keys there when you get to those lessons.
+`.env.local` already has the Supabase project URL and anon key filled in. Add your own `GEMINI_API_KEY` (free tier at [aistudio.google.com](https://aistudio.google.com)) to turn on the chat assistant, and your Stripe keys when you get to that lesson.
 
 ## What's built
 
@@ -26,6 +26,9 @@ npm run dev
 - **Accounts**: sign up / log in via Supabase Auth, with an account area for saved items, wishlist, addresses, and order history (`app/account/*`).
 - **Admin**: `/admin` (gated to accounts with `is_admin = true` on their profile) for managing products and order statuses.
 - **Static pages**: About, Privacy Policy, Cookies, Shipping Information, Order Information, Return Policy.
+- **Chat assistant**: a floating widget (`components/ChatWidget.tsx`) backed by the Gemini API (`app/api/chat/route.ts`), grounded in the live product catalog so it only recommends real products and links to them.
+- **Halloween trope quiz**: `/quiz` matches shoppers to one of five tropes, saves the result to their profile if logged in, and recommends products from the matching collection.
+- **Subscriptions**: `/subscriptions` — three recurring apparel-box tiers.
 
 ## Becoming an admin
 
@@ -45,7 +48,7 @@ update profiles set is_admin = true where id = (select id from auth.users where 
 
 ## Roadmap
 
-- [ ] Wire up an AI shopping assistant (`app/api/chat/route.ts`)
+- [x] Wire up an AI shopping assistant (`app/api/chat/route.ts`)
 - [ ] Wire up Stripe Checkout (`app/api/checkout/route.ts`) and move the cart to real checkout
 - [ ] Stripe webhook handling to create real `orders` rows
 - [ ] Replace illustrated SVG product art with real photography
