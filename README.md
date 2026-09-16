@@ -26,9 +26,10 @@ npm run dev
 - **Accounts**: sign up / log in via Supabase Auth, with an account area for saved items, wishlist, addresses, and order history (`app/account/*`).
 - **Admin**: `/admin` (gated to accounts with `is_admin = true` on their profile) for managing products and order statuses.
 - **Static pages**: About, Privacy Policy, Cookies, Shipping Information, Order Information, Return Policy.
-- **Chat assistant**: a floating widget (`components/ChatWidget.tsx`) backed by the Anthropic API (`app/api/chat/route.ts`), grounded in the live product catalog so it only recommends real products and links to them.
-- **Halloween trope quiz**: `/quiz` matches shoppers to one of five tropes, saves the result to their profile if logged in, and recommends products from the matching collection.
+- **Chat assistant**: a floating widget (`components/ChatWidget.tsx`) backed by the Anthropic API (`app/api/chat/route.ts`), grounded in the live product catalog so it only recommends real products and links to them. Rate-limited to 5 messages/day per visitor.
+- **Halloween trope quiz**: `/quiz` matches shoppers to one of five tropes, saves the result to their profile if logged in, and recommends products from the matching collection. Rate-limited to 2 completions/day per visitor.
 - **Subscriptions**: `/subscriptions` — three recurring apparel-box tiers.
+- **Rate limiting**: `lib/rateLimit.ts` + a `check_and_increment_usage` Postgres function enforce the AI-feature daily limits server-side, keyed by account (logged in) or an anonymous cookie (guests) — so it can't be bypassed by clearing client state.
 
 ## Becoming an admin
 

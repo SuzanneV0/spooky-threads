@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getProductCatalogForAssistant } from "@/lib/queries";
 import { SITE_NAME } from "@/lib/site";
+import { checkAndIncrementUsage, getRateLimitIdentity, type RateLimitIdentity } from "@/lib/rateLimit";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+
+const CHAT_DAILY_LIMIT = 5;
 
 function buildSystemPrompt(catalog: Awaited<ReturnType<typeof getProductCatalogForAssistant>>) {
   const productLines = catalog
@@ -20,6 +23,19 @@ When you recommend a specific product, format it as a markdown link using its sl
 This is a practice storefront built for a course, so checkout isn't live yet — if asked about placing a real order, say so honestly and suggest browsing or adding items to the cart instead.`;
 }
 
+function withAnonCookie(response: NextResponse, identity: RateLimitIdentity) {
+  if (identity.anonCookie) {
+    response.cookies.set(identity.anonCookie.name, identity.anonCookie.value, {
+      maxAge: identity.anonCookie.maxAge,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
+  return response;
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -31,6 +47,19 @@ export async function POST(request: Request) {
   const { messages } = (await request.json()) as { messages: ChatMessage[] };
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "No messages provided." }, { status: 400 });
+  }
+
+  const identity = await getRateLimitIdentity();
+  const allowed = await checkAndIncrementUsage(identity.identifier, "chat", CHAT_DAILY_LIMIT);
+
+  if (!allowed) {
+    return withAnonCookie(
+      NextResponse.json({
+        reply: `You've reached today's limit of ${CHAT_DAILY_LIMIT} messages — come back tomorrow for more spooky shopping advice!`,
+        limited: true,
+      }),
+      identity
+    );
   }
 
   const catalog = await getProductCatalogForAssistant();
@@ -45,12 +74,18 @@ export async function POST(request: Request) {
     });
 
     const reply = response.content.find((block) => block.type === "text")?.text;
-    return NextResponse.json({ reply: reply ?? "Sorry, I didn't catch that — could you try again?" });
+    return withAnonCookie(
+      NextResponse.json({ reply: reply ?? "Sorry, I didn't catch that — could you try again?" }),
+      identity
+    );
   } catch (error) {
     console.error("Claude chat error:", error);
-    return NextResponse.json(
-      { reply: "Something went wrong reaching the assistant. Please try again in a moment." },
-      { status: 502 }
+    return withAnonCookie(
+      NextResponse.json(
+        { reply: "Something went wrong reaching the assistant. Please try again in a moment." },
+        { status: 502 }
+      ),
+      identity
     );
   }
 }

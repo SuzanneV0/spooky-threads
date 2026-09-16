@@ -129,6 +129,27 @@ export type Database = {
           },
         ]
       }
+      feature_usage: {
+        Row: {
+          count: number
+          feature: string
+          identifier: string
+          usage_date: string
+        }
+        Insert: {
+          count?: number
+          feature: string
+          identifier: string
+          usage_date?: string
+        }
+        Update: {
+          count?: number
+          feature?: string
+          identifier?: string
+          usage_date?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           id: string
@@ -366,6 +387,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_increment_usage: {
+        Args: { p_feature: string; p_identifier: string; p_limit: number }
+        Returns: boolean
+      }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {

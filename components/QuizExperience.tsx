@@ -32,7 +32,6 @@ async function fetchRecommendations(tropeSlug: TropeSlug): Promise<Product[]> {
 
 export default function QuizExperience() {
   const { user, profile, refresh } = useAuth();
-  const supabase = createClient();
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<TropeSlug[]>([]);
@@ -41,6 +40,7 @@ export default function QuizExperience() {
   const [saved, setSaved] = useState(false);
   const [revealing, setRevealing] = useState(false);
   const [pendingResult, setPendingResult] = useState<TropeSlug | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
 
   useEffect(() => {
     const savedTrope = profile?.halloween_trope as TropeSlug | null | undefined;
@@ -74,10 +74,20 @@ export default function QuizExperience() {
   async function finishReveal() {
     setRevealing(false);
     if (!pendingResult) return;
-    setResult(pendingResult);
 
+    const res = await fetch("/api/quiz/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trope: pendingResult }),
+    });
+
+    if (res.status === 429) {
+      setLimitReached(true);
+      return;
+    }
+
+    setResult(pendingResult);
     if (user) {
-      await supabase.from("profiles").update({ halloween_trope: pendingResult }).eq("id", user.id);
       await refresh();
       setSaved(true);
     }
@@ -90,6 +100,7 @@ export default function QuizExperience() {
     setSaved(false);
     setRevealing(false);
     setPendingResult(null);
+    setLimitReached(false);
   }
 
   if (revealing) {
@@ -102,6 +113,18 @@ export default function QuizExperience() {
             <span className="quiz-reveal-broom">🧹</span>
           </span>
         </div>
+      </div>
+    );
+  }
+
+  if (limitReached) {
+    return (
+      <div className="card quiz-reveal">
+        <span className="quiz-reveal-limit-emoji">🔮</span>
+        <p className="quiz-reveal-text">
+          You've already taken the quiz twice today — the crystal ball needs to recharge. Come back tomorrow for
+          another reading!
+        </p>
       </div>
     );
   }

@@ -41,6 +41,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [limited, setLimited] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function ChatWidget() {
       });
       const data = await res.json();
       setMessages([...nextMessages, { role: "assistant", content: data.reply ?? "Sorry, something went wrong." }]);
+      if (data.limited) setLimited(true);
     } catch {
       setMessages([...nextMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
     } finally {
@@ -94,12 +96,12 @@ export default function ChatWidget() {
           <form className="chat-input-row" onSubmit={sendMessage}>
             <input
               type="text"
-              placeholder="Ask about a product…"
+              placeholder={limited ? "Daily limit reached — try again tomorrow" : "Ask about a product…"}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
+              disabled={loading || limited}
             />
-            <button type="submit" className="button small" disabled={loading || !input.trim()}>
+            <button type="submit" className="button small" disabled={loading || limited || !input.trim()}>
               Send
             </button>
           </form>

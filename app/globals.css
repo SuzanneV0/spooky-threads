@@ -427,6 +427,17 @@ label {
   font-size: 0.9rem;
   margin: 0 0 3rem;
 }
+.quiz-reveal-limit-emoji {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.quiz-reveal-limit-emoji + .quiz-reveal-text {
+  margin-bottom: 0;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
 .quiz-reveal-track {
   position: relative;
   height: 4px;
