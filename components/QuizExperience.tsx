@@ -123,7 +123,7 @@ export default function QuizExperience() {
         <span className="quiz-reveal-limit-emoji">🔮</span>
         <p className="quiz-reveal-text">
           You've already taken the quiz twice today — the crystal ball needs to recharge. Come back tomorrow for
-          another reading!
+          another reading, or <Link href="/subscriptions">subscribe</Link> for unlimited tries.
         </p>
       </div>
     );
@@ -139,7 +139,12 @@ export default function QuizExperience() {
           <h2>{trope.name}</h2>
           <p className="quiz-result-description">{trope.description}</p>
           {user ? (
-            saved && <p className="quiz-result-note">Saved to your profile ✓</p>
+            <>
+              {saved && <p className="quiz-result-note">Saved to your profile ✓</p>}
+              {profile?.subscription_tier && (
+                <p className="quiz-result-note">✨ Unlimited quizzes with your subscription</p>
+              )}
+            </>
           ) : (
             <p className="quiz-result-note">
               <Link href="/login">Log in</Link> to save this result to your profile.

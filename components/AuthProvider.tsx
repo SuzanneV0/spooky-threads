@@ -9,6 +9,7 @@ type Profile = {
   full_name: string | null;
   is_admin: boolean;
   halloween_trope: string | null;
+  subscription_tier: string | null;
 };
 
 type AuthContextValue = {
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (currentUser) {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, full_name, is_admin, halloween_trope")
+        .select("id, full_name, is_admin, halloween_trope, subscription_tier")
         .eq("id", currentUser.id)
         .single();
       setProfile(profileData);

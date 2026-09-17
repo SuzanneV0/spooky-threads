@@ -295,6 +295,7 @@ export type Database = {
           halloween_trope: string | null
           id: string
           is_admin: boolean
+          subscription_tier: string | null
         }
         Insert: {
           created_at?: string
@@ -302,6 +303,7 @@ export type Database = {
           halloween_trope?: string | null
           id: string
           is_admin?: boolean
+          subscription_tier?: string | null
         }
         Update: {
           created_at?: string
@@ -309,6 +311,7 @@ export type Database = {
           halloween_trope?: string | null
           id?: string
           is_admin?: boolean
+          subscription_tier?: string | null
         }
         Relationships: []
       }

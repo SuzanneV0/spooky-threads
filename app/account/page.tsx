@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import { tropes, type TropeSlug } from "@/lib/quizTropes";
+import { getTierBySlug } from "@/lib/subscriptionTiers";
 
 export default function AccountOverview() {
   const { user, profile } = useAuth();
   const trope = profile?.halloween_trope ? tropes[profile.halloween_trope as TropeSlug] : null;
+  const tier = getTierBySlug(profile?.subscription_tier);
 
   return (
     <div>
@@ -16,6 +18,10 @@ export default function AccountOverview() {
         <Link href="/quiz" className="card account-tile">
           <h3>Your Halloween Trope</h3>
           <p>{trope ? `${trope.emoji} You're ${trope.name}.` : "Take the quiz to find out."}</p>
+        </Link>
+        <Link href="/subscriptions" className="card account-tile">
+          <h3>Subscription</h3>
+          <p>{tier ? `${tier.name} — $${tier.price}/month` : "Not subscribed."}</p>
         </Link>
         <Link href="/account/saved" className="card account-tile">
           <h3>Saved for later</h3>
