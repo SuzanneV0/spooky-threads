@@ -20,7 +20,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please log in to check out." }, { status: 401 });
   }
 
-  const { items } = (await request.json()) as { items: { productId: string; quantity: number }[] };
+  const { items } = (await request.json()) as {
+    items: { productId: string; quantity: number; size: string | null }[];
+  };
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
   }
@@ -37,16 +39,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Those items are no longer available." }, { status: 400 });
   }
 
-  const quantityByProduct = new Map(items.map((i) => [i.productId, i.quantity]));
+  const productsById = new Map(products.map((p) => [p.id, p]));
 
-  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = products.map((p) => ({
-    price_data: {
-      currency: "usd",
-      product_data: { name: p.name, metadata: { product_id: p.id } },
-      unit_amount: p.price_cents,
-    },
-    quantity: Math.max(1, quantityByProduct.get(p.id) ?? 1),
-  }));
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.flatMap((item) => {
+    const product = productsById.get(item.productId);
+    if (!product) return [];
+
+    return [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: item.size ? `${product.name} — Size ${item.size}` : product.name,
+            metadata: { product_id: product.id, ...(item.size ? { size: item.size } : {}) },
+          },
+          unit_amount: product.price_cents,
+        },
+        quantity: Math.max(1, item.quantity ?? 1),
+      },
+    ];
+  });
+
+  if (lineItems.length === 0) {
+    return NextResponse.json({ error: "Those items are no longer available." }, { status: 400 });
+  }
 
   const origin = new URL(request.url).origin;
   const stripe = new Stripe(apiKey);

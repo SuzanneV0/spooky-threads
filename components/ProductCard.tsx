@@ -3,10 +3,12 @@
 import Link from "next/link";
 import ProductPhoto from "@/components/ProductPhoto";
 import { useCart } from "@/components/CartProvider";
+import { requiresSize } from "@/lib/sizes";
 import type { Product } from "@/lib/queries";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const needsSize = requiresSize(product.product_type);
 
   return (
     <div className="card product-card">
@@ -19,20 +21,27 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.name}
         </Link>
         <p className="product-card-price">${(product.price_cents / 100).toFixed(2)}</p>
-        <button
-          className="button small"
-          onClick={() =>
-            addItem({
-              productId: product.id,
-              slug: product.slug,
-              name: product.name,
-              priceCents: product.price_cents,
-              productType: product.product_type,
-            })
-          }
-        >
-          Add to cart
-        </button>
+        {needsSize ? (
+          <Link href={`/products/${product.slug}`} className="button small">
+            Select size
+          </Link>
+        ) : (
+          <button
+            className="button small"
+            onClick={() =>
+              addItem({
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                priceCents: product.price_cents,
+                productType: product.product_type,
+                size: null,
+              })
+            }
+          >
+            Add to cart
+          </button>
+        )}
       </div>
     </div>
   );

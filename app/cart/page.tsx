@@ -20,7 +20,7 @@ export default function CartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+          items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity, size: line.size })),
         }),
       });
       const data = await res.json();
@@ -50,30 +50,39 @@ export default function CartPage() {
       <h1>Your cart</h1>
       <ul className="cart-list">
         {lines.map((line) => (
-          <li key={line.productId} className="card cart-line">
+          <li key={`${line.productId}-${line.size ?? ""}`} className="card cart-line">
             <div className="cart-line-art">
               <ProductPhoto slug={line.slug} productType={line.productType} name={line.name} sizes="64px" />
             </div>
             <div className="cart-line-info">
               <Link href={`/products/${line.slug}`}>{line.name}</Link>
+              {line.size && <p className="cart-line-size">Size: {line.size}</p>}
               <p>${(line.priceCents / 100).toFixed(2)}</p>
             </div>
             <div className="quantity-stepper">
-              <button onClick={() => setQuantity(line.productId, line.quantity - 1)} aria-label="Decrease quantity">
+              <button
+                onClick={() => setQuantity(line.productId, line.size, line.quantity - 1)}
+                aria-label="Decrease quantity"
+              >
                 −
               </button>
               <input
                 type="number"
                 min={1}
                 value={line.quantity}
-                onChange={(e) => setQuantity(line.productId, Math.max(1, Number(e.target.value) || 1))}
+                onChange={(e) =>
+                  setQuantity(line.productId, line.size, Math.max(1, Number(e.target.value) || 1))
+                }
               />
-              <button onClick={() => setQuantity(line.productId, line.quantity + 1)} aria-label="Increase quantity">
+              <button
+                onClick={() => setQuantity(line.productId, line.size, line.quantity + 1)}
+                aria-label="Increase quantity"
+              >
                 +
               </button>
             </div>
             <p className="cart-line-total">${((line.priceCents * line.quantity) / 100).toFixed(2)}</p>
-            <button className="button secondary small" onClick={() => removeItem(line.productId)}>
+            <button className="button secondary small" onClick={() => removeItem(line.productId, line.size)}>
               Remove
             </button>
           </li>

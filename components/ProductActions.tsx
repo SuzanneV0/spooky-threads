@@ -4,14 +4,19 @@ import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { APPAREL_SIZES, requiresSize } from "@/lib/sizes";
 import type { Product } from "@/lib/queries";
 
 export default function ProductActions({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
+  const [size, setSize] = useState("");
   const [listStatus, setListStatus] = useState<string | null>(null);
   const { addItem } = useCart();
   const { user } = useAuth();
   const supabase = createClient();
+
+  const needsSize = requiresSize(product.product_type);
+  const canAddToCart = !needsSize || size !== "";
 
   async function saveToList(kind: "saved" | "wishlist") {
     if (!user) {
@@ -26,6 +31,22 @@ export default function ProductActions({ product }: { product: Product }) {
 
   return (
     <div className="product-actions">
+      {needsSize && (
+        <div className="size-row">
+          <label htmlFor="size">Size</label>
+          <select id="size" value={size} onChange={(e) => setSize(e.target.value)} required>
+            <option value="" disabled>
+              Select a size
+            </option>
+            {APPAREL_SIZES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="quantity-row">
         <label htmlFor="qty" className="visually-hidden">
           Quantity
@@ -47,6 +68,8 @@ export default function ProductActions({ product }: { product: Product }) {
         </div>
         <button
           className="button"
+          disabled={!canAddToCart}
+          title={needsSize && !canAddToCart ? "Select a size first" : undefined}
           onClick={() =>
             addItem(
               {
@@ -55,6 +78,7 @@ export default function ProductActions({ product }: { product: Product }) {
                 name: product.name,
                 priceCents: product.price_cents,
                 productType: product.product_type,
+                size: needsSize ? size : null,
               },
               quantity
             )

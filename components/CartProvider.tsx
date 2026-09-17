@@ -8,6 +8,7 @@ export type CartLine = {
   name: string;
   priceCents: number;
   productType: string;
+  size: string | null;
   quantity: number;
 };
 
@@ -16,14 +17,18 @@ type CartContextValue = {
   count: number;
   subtotalCents: number;
   addItem: (item: Omit<CartLine, "quantity">, quantity?: number) => void;
-  setQuantity: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  setQuantity: (productId: string, size: string | null, quantity: number) => void;
+  removeItem: (productId: string, size: string | null) => void;
   clear: () => void;
 };
 
 const STORAGE_KEY = "spooky-threads-cart";
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function sameLine(line: CartLine, productId: string, size: string | null) {
+  return line.productId === productId && line.size === size;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -50,25 +55,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = useCallback((item: Omit<CartLine, "quantity">, quantity = 1) => {
     setLines((prev) => {
-      const existing = prev.find((l) => l.productId === item.productId);
+      const existing = prev.find((l) => sameLine(l, item.productId, item.size));
       if (existing) {
         return prev.map((l) =>
-          l.productId === item.productId ? { ...l, quantity: l.quantity + quantity } : l
+          sameLine(l, item.productId, item.size) ? { ...l, quantity: l.quantity + quantity } : l
         );
       }
       return [...prev, { ...item, quantity }];
     });
   }, []);
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
+  const setQuantity = useCallback((productId: string, size: string | null, quantity: number) => {
     setLines((prev) => {
-      if (quantity <= 0) return prev.filter((l) => l.productId !== productId);
-      return prev.map((l) => (l.productId === productId ? { ...l, quantity } : l));
+      if (quantity <= 0) return prev.filter((l) => !sameLine(l, productId, size));
+      return prev.map((l) => (sameLine(l, productId, size) ? { ...l, quantity } : l));
     });
   }, []);
 
-  const removeItem = useCallback((productId: string) => {
-    setLines((prev) => prev.filter((l) => l.productId !== productId));
+  const removeItem = useCallback((productId: string, size: string | null) => {
+    setLines((prev) => prev.filter((l) => !sameLine(l, productId, size)));
   }, []);
 
   const clear = useCallback(() => {
