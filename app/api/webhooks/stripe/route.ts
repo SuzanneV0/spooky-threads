@@ -23,6 +23,18 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
       })
       .eq("id", userId);
 
+    // Now that the new subscription is confirmed active, cancel whatever
+    // plan they were switching from. Doing this only now — never before —
+    // means an abandoned checkout never leaves someone with no active plan.
+    const previousSubscriptionId = session.metadata?.previous_subscription_id;
+    if (previousSubscriptionId && previousSubscriptionId !== subscriptionId) {
+      try {
+        await stripe.subscriptions.cancel(previousSubscriptionId);
+      } catch (error) {
+        console.error("Failed to cancel previous subscription after plan switch:", error);
+      }
+    }
+
     return;
   }
 

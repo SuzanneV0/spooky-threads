@@ -27,6 +27,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown subscription tier." }, { status: 400 });
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id, stripe_subscription_id")
+    .eq("id", user.id)
+    .single();
+
   const origin = new URL(request.url).origin;
   const stripe = new Stripe(apiKey);
 
@@ -49,9 +55,20 @@ export async function POST(request: Request) {
       ],
       success_url: `${origin}/subscriptions?subscribed=1`,
       cancel_url: `${origin}/subscriptions?canceled=1`,
-      customer_email: user.email ?? undefined,
+      // Reuse the existing Stripe customer if we have one, so switching plans
+      // doesn't create a duplicate customer record for the same person.
+      ...(profile?.stripe_customer_id
+        ? { customer: profile.stripe_customer_id }
+        : { customer_email: user.email ?? undefined }),
       client_reference_id: user.id,
-      metadata: { user_id: user.id, tier_slug: tier.slug },
+      metadata: {
+        user_id: user.id,
+        tier_slug: tier.slug,
+        // Carried through so the webhook can cancel the old plan once the
+        // new one is confirmed paid — never before, so an abandoned
+        // checkout never leaves the customer with no active subscription.
+        previous_subscription_id: profile?.stripe_subscription_id ?? "",
+      },
       subscription_data: { metadata: { user_id: user.id, tier_slug: tier.slug } },
     });
 
