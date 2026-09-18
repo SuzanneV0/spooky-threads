@@ -6,11 +6,22 @@ const staticRoutes = [
   "",
   "/collections",
   "/about",
+  "/subscriptions",
+  "/quiz",
+  "/terms-of-service",
   "/privacy-policy",
   "/cookies",
   "/shipping-information",
   "/order-information",
   "/return-policy",
+];
+
+const whimsicalGothRoutes = [
+  "/whimsical-goth",
+  "/whimsical-goth/spring",
+  "/whimsical-goth/summer",
+  "/whimsical-goth/fall",
+  "/whimsical-goth/winter",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -27,6 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "" ? 1 : 0.5,
   }));
 
+  const whimsicalGothEntries: MetadataRoute.Sitemap = whimsicalGothRoutes.map((path) => ({
+    url: `${SITE_URL}${path}`,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
   const collectionEntries: MetadataRoute.Sitemap = (collections ?? []).map((c) => ({
     url: `${SITE_URL}/collections/${c.slug}`,
     changeFrequency: "daily",
@@ -40,5 +57,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticEntries, ...collectionEntries, ...productEntries];
+  return [...staticEntries, ...whimsicalGothEntries, ...collectionEntries, ...productEntries];
 }

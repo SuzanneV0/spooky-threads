@@ -958,6 +958,50 @@ label {
   color: var(--color-muted-text);
 }
 
+.whimsical-copy {
+  max-width: 680px;
+  margin: 0 auto;
+  padding-top: 2.5rem;
+  padding-bottom: 1rem;
+}
+.whimsical-season-section {
+  padding: 1rem 0 3rem;
+}
+.whimsical-season-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.whimsical-season-card {
+  padding: 1.75rem;
+  text-decoration: none;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.whimsical-season-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(25, 23, 28, 0.1);
+}
+.whimsical-season-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.whimsical-season-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.4rem;
+}
+.whimsical-season-card p {
+  color: var(--color-muted-text);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  flex-grow: 1;
+}
+.whimsical-season-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

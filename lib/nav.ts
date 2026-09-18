@@ -62,6 +62,7 @@ export const mainNav: NavSection[] = [
 
 export const footerLinks: NavItem[] = [
   { label: "About", href: "/about" },
+  { label: "Whimsical Goth, Year-Round", href: "/whimsical-goth" },
   { label: "Terms of Service", href: "/terms-of-service" },
   { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Cookies", href: "/cookies" },
