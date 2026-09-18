@@ -414,6 +414,15 @@ label {
   text-decoration: none;
   width: 100%;
 }
+.pricing-banner {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.85rem 1.2rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
 
 .quiz-section {
   padding: 3rem 0 4rem;

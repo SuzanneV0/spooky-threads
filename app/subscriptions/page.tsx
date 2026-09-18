@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import SubscriptionTiers from "@/components/SubscriptionTiers";
 import { subscriptionTiers } from "@/lib/subscriptionTiers";
 
@@ -22,7 +23,9 @@ export default function SubscriptionsPage() {
       </section>
 
       <section className="container pricing-section">
-        <SubscriptionTiers tiers={subscriptionTiers} />
+        <Suspense fallback={null}>
+          <SubscriptionTiers tiers={subscriptionTiers} />
+        </Suspense>
       </section>
     </>
   );
