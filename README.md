@@ -25,7 +25,7 @@ Checkout needs three more values in `.env.local`:
 
 ## What's built
 
-- **Storefront**: home page with 3 product rows, full nav (Collections, Women, Men, Accessories, Home Decor) matching the site's collection structure, 22 collections seeded across themes/categories/departments, 33 sample products with fake pricing and hand-illustrated SVG art in the brand color palette (`app/globals.css`, `lib/productArt.ts`).
+- **Storefront**: home page with 3 product rows, full nav (Collections, Women, Men, Accessories, Home Decor) matching the site's collection structure, 22 collections seeded across themes/categories/departments, 33 sample products with fake pricing and real photography (`public/products/`, `components/ProductPhoto.tsx`) — falling back to hand-illustrated SVG art in the brand color palette (`components/ProductArt.tsx`, `lib/productArt.ts`) if a photo fails to load.
 - **Product pages**: quantity selector, add to cart, save for later, add to wishlist, wash instructions, and a reviews/ratings section.
 - **Cart**: guest cart stored in the browser (`components/CartProvider.tsx`). Checkout requires being logged in, creates a Stripe Checkout Session (`app/api/checkout/route.ts`) with prices looked up server-side (never trusts the client), and a webhook (`app/api/webhooks/stripe/route.ts`) creates the `orders`/`order_items` rows once payment completes.
 - **Accounts**: sign up / log in via Supabase Auth, with an account area for saved items, wishlist, addresses, and order history (`app/account/*`).
@@ -58,4 +58,4 @@ update profiles set is_admin = true where id = (select id from auth.users where 
 - [x] Wire up an AI shopping assistant (`app/api/chat/route.ts`)
 - [x] Wire up Stripe Checkout (`app/api/checkout/route.ts`) and move the cart to real checkout
 - [x] Stripe webhook handling to create real `orders` rows
-- [ ] Replace illustrated SVG product art with real photography
+- [x] Replace illustrated SVG product art with real photography (SVG art now only shows as a fallback if a product photo fails to load)
