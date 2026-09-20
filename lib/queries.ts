@@ -59,6 +59,13 @@ export async function getProductBySlug(slug: string) {
   return data;
 }
 
+export async function getProductsBySlugs(slugs: string[]) {
+  if (slugs.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("products").select("*").in("slug", slugs);
+  return data ?? [];
+}
+
 export async function getReviewsForProduct(productId: string) {
   const supabase = await createClient();
   const { data } = await supabase

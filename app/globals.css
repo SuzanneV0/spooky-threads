@@ -269,6 +269,9 @@ label {
   display: flex;
   flex-direction: column;
 }
+.product-card-art-wrap {
+  position: relative;
+}
 .product-card-art {
   display: block;
   position: relative;
@@ -278,6 +281,33 @@ label {
   display: block;
   width: 100%;
   height: auto;
+}
+.product-card-compare {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(246, 241, 231, 0.9);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+.product-card-compare input {
+  cursor: pointer;
+}
+.product-card-compare.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.product-card-compare.disabled input {
+  cursor: not-allowed;
 }
 .product-photo {
   position: relative;
@@ -1016,6 +1046,67 @@ label {
   white-space: nowrap;
 }
 
+.compare-bar {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 90;
+  width: min(300px, calc(100vw - 2.5rem));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(25, 23, 28, 0.18);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.compare-bar-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.compare-bar-clear {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  cursor: pointer;
+}
+.compare-bar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.compare-bar-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.compare-bar-list li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.compare-bar-list li button {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-muted-text);
+  cursor: pointer;
+}
+
 .chat-widget {
   position: fixed;
   right: 1.25rem;
@@ -1110,4 +1201,59 @@ label {
   flex: 1;
   font-size: 0.85rem;
   padding: 0.5rem 0.7rem;
+}
+
+.compare-page {
+  padding: 3rem 1.25rem;
+}
+.compare-page h1 {
+  margin-bottom: 1.5rem;
+}
+.compare-table-scroll {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+.compare-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 480px;
+}
+.compare-row {
+  display: grid;
+  grid-template-columns: 120px repeat(var(--compare-cols), minmax(180px, 1fr));
+  gap: 1.25rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: start;
+}
+.compare-row-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted-text);
+  padding-top: 0.2rem;
+}
+.compare-cell {
+  color: var(--color-text);
+  line-height: 1.4;
+}
+.compare-cell-capitalize {
+  text-transform: capitalize;
+}
+.compare-cell-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.compare-cell-photo .product-photo {
+  border-radius: 12px;
+}
+.compare-cell-name {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.compare-cell-name:hover {
+  text-decoration: underline;
 }

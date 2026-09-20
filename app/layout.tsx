@@ -4,9 +4,11 @@ import { Ultra } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { CartProvider } from "@/components/CartProvider";
+import { CompareProvider } from "@/components/CompareProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import CompareBar from "@/components/CompareBar";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const ultra = Ultra({
@@ -62,10 +64,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <AuthProvider>
           <CartProvider>
-            <Header />
-            <main>{children}</main>
-            <Footer />
-            <ChatWidget />
+            <CompareProvider>
+              <Header />
+              <main>{children}</main>
+              <Footer />
+              <ChatWidget />
+              <CompareBar />
+            </CompareProvider>
           </CartProvider>
         </AuthProvider>
       </body>
