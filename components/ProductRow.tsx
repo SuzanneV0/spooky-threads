@@ -6,10 +6,12 @@ export default function ProductRow({
   title,
   href,
   products,
+  cols = 4,
 }: {
   title: string;
   href: string;
   products: Product[];
+  cols?: 3 | 4;
 }) {
   if (products.length === 0) return null;
 
@@ -19,7 +21,7 @@ export default function ProductRow({
         <h2>{title}</h2>
         <Link href={href}>Shop all →</Link>
       </div>
-      <div className="grid cols-4">
+      <div className={`grid cols-${cols}`}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
