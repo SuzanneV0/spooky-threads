@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { getProductsForCollectionSlug } from "@/lib/queries";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -32,8 +33,30 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
 
   if (!collection) notFound();
 
+  const pageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: collection.name,
+    url: `${SITE_URL}/collections/${slug}`,
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
+    ...(products.length > 0 && {
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: products.map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${SITE_URL}/products/${product.slug}`,
+        })),
+      },
+    }),
+  };
+
   return (
     <div className="container" style={{ padding: "3rem 1.25rem" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
+      />
       <h1>{collection.name}</h1>
 
       {children.length > 0 && (
