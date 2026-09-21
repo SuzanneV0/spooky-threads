@@ -49,7 +49,10 @@ export const metadata: Metadata = {
     images: ["/og-image.jpg"],
   },
   verification: {
-    google: "HuQMSl01JSTEDgVCfts2wYCgdWdJvCnRDKWYvkCyvE8",
+    google: [
+      "HuQMSl01JSTEDgVCfts2wYCgdWdJvCnRDKWYvkCyvE8", // spooky-threads.vercel.app
+      "_JdRVADgHAIITpd5KziUznbXVhXuvYVdhYS_tLi9QTQ", // www.spookythreads.store
+    ],
   },
 };
 
