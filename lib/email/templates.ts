@@ -1,6 +1,15 @@
 import { renderEmailLayout } from "@/lib/email/layout";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function welcomeEmail({ name }: { name: string }) {
   const firstName = name.trim().split(" ")[0] || "there";
 
@@ -60,6 +69,42 @@ export function orderConfirmationEmail({
       `,
       ctaText: "View your orders",
       ctaHref: `${SITE_URL}/account/orders`,
+    }),
+  };
+}
+
+const CONTACT_MESSAGE_TYPE_LABELS: Record<string, string> = {
+  general: "General inquiry",
+  orders: "Orders",
+  subscriptions: "Subscriptions",
+  other: "Other comments",
+};
+
+export function contactMessageEmail({
+  name,
+  email,
+  messageType,
+  message,
+}: {
+  name: string;
+  email: string;
+  messageType: string;
+  message: string;
+}) {
+  const typeLabel = CONTACT_MESSAGE_TYPE_LABELS[messageType] ?? messageType;
+
+  return {
+    subject: `New contact form message: ${typeLabel}`,
+    html: renderEmailLayout({
+      previewText: `${name} sent a message via the ${SITE_NAME} contact form.`,
+      eyebrow: typeLabel,
+      heading: "New contact form message",
+      bodyHtml: `
+        <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Topic:</strong> ${escapeHtml(typeLabel)}</p>
+        <p style="margin-top:20px; white-space:pre-wrap;">${escapeHtml(message)}</p>
+      `,
     }),
   };
 }

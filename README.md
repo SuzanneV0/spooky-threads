@@ -27,6 +27,9 @@ Checkout needs three more values in `.env.local`:
 Transactional email needs one more value:
 - `RESEND_API_KEY` — from the [Resend dashboard](https://resend.com/api-keys). Sending also requires verifying a domain in Resend (Domains → Add Domain) and adding the SPF/DKIM records it gives you at your DNS provider — until that's done, `lib/email/send.ts` logs a warning and skips sending instead of failing the request. Emails are currently sent from `hello@spookythreads.store` (`EMAIL_FROM` in `lib/site.ts`).
 
+The contact form's spam protection needs two more values:
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` / `RECAPTCHA_SECRET_KEY` — register the site (v2 "I'm not a robot" checkbox) at the [reCAPTCHA admin console](https://www.google.com/recaptcha/admin). Without these, `/contact` skips rendering the widget and the API route skips verification — fine for local dev, but set them in production.
+
 ## What's built
 
 - **Storefront**: home page with 3 product rows, full nav (Collections, Women, Men, Accessories, Home Decor) matching the site's collection structure, 22 collections seeded across themes/categories/departments, 33 sample products with fake pricing and real photography (`public/products/`, `components/ProductPhoto.tsx`) — falling back to hand-illustrated SVG art in the brand color palette (`components/ProductArt.tsx`, `lib/productArt.ts`) if a photo fails to load.
@@ -41,6 +44,7 @@ Transactional email needs one more value:
 - **Subscriptions**: `/subscriptions` — three tiers with real recurring billing via Stripe Checkout (`mode: "subscription"`, `app/api/subscribe/route.ts`). Subscribing or switching plans redirects to Stripe; the webhook (`checkout.session.completed`) activates it on `profiles.subscription_tier`, which the quiz gate checks. Switching plans starts a new subscription and only cancels the old one once the new one is confirmed paid (via a `previous_subscription_id` carried in the session metadata) — so an abandoned checkout never leaves someone double-billed or without an active plan. Cancelling (`app/api/subscribe/cancel/route.ts`) cancels the Stripe subscription immediately — no proration/refund handling, which is out of scope for a course project.
 - **Rate limiting**: `lib/rateLimit.ts` + a `check_and_increment_usage` Postgres function enforce the AI-feature daily limits server-side, keyed by account (logged in) or an anonymous cookie (guests) — so it can't be bypassed by clearing client state.
 - **Transactional email**: sent via [Resend](https://resend.com/) using a shared branded HTML layout (`lib/email/layout.ts`) in the site's own color palette. Three emails: a welcome email on signup (`app/api/emails/welcome/route.ts`), an order confirmation sent from the Stripe webhook once an order is created, and a password reset email for a custom forgot/reset-password flow (`/forgot-password` → `app/api/auth/forgot-password/route.ts` generates a Supabase recovery link and emails it → `/auth/callback` exchanges it for a session → `/reset-password` sets the new password). Sending is best-effort: if `RESEND_API_KEY` isn't set or a domain isn't verified yet, it logs and moves on rather than blocking signup/checkout/reset.
+- **Contact form**: `/contact` (`components/ContactForm.tsx`), linked only from the footer. Name, email, a topic dropdown (general inquiry, orders, subscriptions, other), and a message — gated by a reCAPTCHA v2 checkbox verified server-side (`app/api/contact/route.ts`) before the message is emailed to `CONTACT_EMAIL` (`lib/site.ts`) via the same Resend layout used elsewhere.
 
 ## Becoming an admin
 
@@ -65,3 +69,4 @@ update profiles set is_admin = true where id = (select id from auth.users where 
 - [x] Stripe webhook handling to create real `orders` rows
 - [x] Replace illustrated SVG product art with real photography (SVG art now only shows as a fallback if a product photo fails to load)
 - [x] Transactional email via Resend (welcome, order confirmation, password reset) — needs a verified sending domain in Resend before it'll actually deliver, see `RESEND_API_KEY` above
+- [x] Contact form with reCAPTCHA spam protection (`/contact`) — needs `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` / `RECAPTCHA_SECRET_KEY` in production, see above

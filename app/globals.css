@@ -855,6 +855,13 @@ label {
   justify-content: center;
   gap: 0.6rem;
 }
+.contact-form {
+  max-width: 480px;
+}
+.contact-form textarea {
+  resize: vertical;
+}
+
 .form-error {
   color: #b3261e;
   font-size: 0.85rem;
