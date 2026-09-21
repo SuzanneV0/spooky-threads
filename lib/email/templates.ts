@@ -8,6 +8,7 @@ export function welcomeEmail({ name }: { name: string }) {
     subject: `Welcome to ${SITE_NAME} 🎃`,
     html: renderEmailLayout({
       previewText: `Welcome to ${SITE_NAME} — your Halloween era starts now.`,
+      eyebrow: "New account 👻",
       heading: `Welcome, ${firstName}!`,
       bodyHtml: `
         <p>Thanks for creating an account with ${SITE_NAME}. You're all set to shop cozy, spooky-cute apparel and home goods, save favorites to a wishlist, and track your orders.</p>
@@ -42,12 +43,13 @@ export function orderConfirmationEmail({
     .join("");
 
   return {
-    subject: `Your ${SITE_NAME} order is confirmed`,
+    subject: `Your ${SITE_NAME} order is confirmed 🎃`,
     html: renderEmailLayout({
       previewText: `Order #${orderId.slice(0, 8)} confirmed — thanks for shopping with ${SITE_NAME}.`,
+      eyebrow: "Order confirmed",
       heading: "Your order is confirmed!",
       bodyHtml: `
-        <p>Thanks for your order — we're getting it ready. Here's what you picked out:</p>
+        <p>Thanks for your order — we're getting it ready to haunt your doorstep. Here's what you picked out:</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px; font-size:14px;">
           ${itemRows}
           <tr>
@@ -64,9 +66,10 @@ export function orderConfirmationEmail({
 
 export function passwordResetEmail({ resetLink }: { resetLink: string }) {
   return {
-    subject: `Reset your ${SITE_NAME} password`,
+    subject: `Reset your ${SITE_NAME} password 🔒`,
     html: renderEmailLayout({
       previewText: "Reset your password — this link will expire soon.",
+      eyebrow: "Password reset",
       heading: "Reset your password",
       bodyHtml: `
         <p>We got a request to reset the password on your ${SITE_NAME} account. Click below to choose a new one.</p>
