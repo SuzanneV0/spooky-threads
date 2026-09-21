@@ -828,6 +828,12 @@ label {
   text-align: center;
   margin-top: 0.5rem;
 }
+.auth-forgot-link {
+  font-size: 0.8rem;
+  color: var(--color-muted-text);
+  align-self: flex-end;
+  margin-top: -0.4rem;
+}
 .auth-divider {
   display: flex;
   align-items: center;

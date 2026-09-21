@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -16,9 +14,13 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
       setError(error.message);
@@ -31,31 +33,29 @@ export default function LoginPage() {
   return (
     <div className="container auth-page">
       <form className="card auth-form" onSubmit={handleSubmit}>
-        <h1>Log in</h1>
-        <label htmlFor="email">Email</label>
-        <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        <label htmlFor="password">Password</label>
+        <h1>Choose a new password</h1>
+        <label htmlFor="password">New password</label>
         <input
           id="password"
           type="password"
           required
+          minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Link href="/forgot-password" className="auth-forgot-link">
-          Forgot password?
-        </Link>
+        <label htmlFor="confirm">Confirm password</label>
+        <input
+          id="confirm"
+          type="password"
+          required
+          minLength={6}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
         {error && <p className="form-error">{error}</p>}
         <button className="button" type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Log in"}
+          {loading ? "Saving..." : "Save new password"}
         </button>
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
-        <GoogleSignInButton />
-        <p className="auth-switch">
-          Don&apos;t have an account? <Link href="/signup">Sign up</Link>
-        </p>
       </form>
     </div>
   );

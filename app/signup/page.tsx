@@ -30,6 +30,15 @@ export default function SignupPage() {
       setError(error.message);
       return;
     }
+    if (data.user) {
+      fetch("/api/emails/welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: data.user.id }),
+      }).catch(() => {
+        // Welcome email is best-effort; account creation already succeeded.
+      });
+    }
     if (data.session) {
       router.push("/account");
       router.refresh();

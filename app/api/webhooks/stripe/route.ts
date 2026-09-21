@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email/send";
+import { orderConfirmationEmail } from "@/lib/email/templates";
 
 async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Checkout.Session) {
   const supabaseAdmin = createAdminClient();
@@ -91,6 +93,20 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
   const { error: itemsError } = await supabaseAdmin.from("order_items").insert(orderItems);
   if (itemsError) {
     console.error("Failed to create order items from Stripe session:", itemsError);
+  }
+
+  const customerEmail = session.customer_details?.email;
+  if (customerEmail) {
+    const { subject, html } = orderConfirmationEmail({
+      orderId: order.id,
+      items: orderItems.map((item) => ({
+        name: item.product_name,
+        quantity: item.quantity,
+        priceCents: item.price_cents,
+      })),
+      totalCents: order.total_cents,
+    });
+    await sendEmail({ to: customerEmail, subject, html });
   }
 }
 
