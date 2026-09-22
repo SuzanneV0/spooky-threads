@@ -83,9 +83,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Stripe checkout error:", error);
-    if (error instanceof Error) {
-      console.error("Stripe checkout error detail:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    }
     return NextResponse.json({ error: "Something went wrong starting checkout. Please try again." }, { status: 502 });
   }
 }
