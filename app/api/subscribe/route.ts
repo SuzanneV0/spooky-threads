@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTierBySlug } from "@/lib/subscriptionTiers";
 import { getStripeClient } from "@/lib/stripe";
+import { firstIssueMessage, subscribeSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
   const apiKey = process.env.STRIPE_SECRET_KEY;
@@ -21,8 +22,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please log in to subscribe." }, { status: 401 });
   }
 
-  const { tierSlug } = (await request.json()) as { tierSlug?: string };
-  const tier = getTierBySlug(tierSlug);
+  const parsed = subscribeSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
+  }
+  const tier = getTierBySlug(parsed.data.tierSlug);
   if (!tier) {
     return NextResponse.json({ error: "Unknown subscription tier." }, { status: 400 });
   }

@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/send";
 import { contactMessageEmail } from "@/lib/email/templates";
 import { CONTACT_EMAIL } from "@/lib/site";
-
-const MESSAGE_TYPES = new Set(["general", "orders", "subscriptions", "other"]);
+import { contactMessageSchema, firstIssueMessage } from "@/lib/validation";
 
 async function verifyRecaptcha(token: string | undefined) {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
@@ -23,22 +22,13 @@ async function verifyRecaptcha(token: string | undefined) {
 }
 
 export async function POST(request: Request) {
-  const { name, email, messageType, message, recaptchaToken } = await request.json();
-
-  if (
-    typeof name !== "string" ||
-    !name.trim() ||
-    typeof email !== "string" ||
-    !email.trim() ||
-    typeof messageType !== "string" ||
-    !MESSAGE_TYPES.has(messageType) ||
-    typeof message !== "string" ||
-    !message.trim()
-  ) {
-    return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
+  const parsed = contactMessageSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
   }
+  const { name, email, messageType, message, recaptchaToken } = parsed.data;
 
-  const recaptchaOk = await verifyRecaptcha(typeof recaptchaToken === "string" ? recaptchaToken : undefined);
+  const recaptchaOk = await verifyRecaptcha(recaptchaToken);
   if (!recaptchaOk) {
     return NextResponse.json({ error: "reCAPTCHA verification failed" }, { status: 400 });
   }

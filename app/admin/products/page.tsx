@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
+import { firstIssueMessage, productFormSchema } from "@/lib/validation";
 
 type Product = Tables<"products">;
 
@@ -21,6 +22,7 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function load() {
@@ -34,6 +36,7 @@ export default function AdminProductsPage() {
   }, []);
 
   function startEdit(product: Product) {
+    setFormError(null);
     setEditingId(product.id);
     setForm({
       slug: product.slug,
@@ -48,6 +51,7 @@ export default function AdminProductsPage() {
   }
 
   function startCreate() {
+    setFormError(null);
     setEditingId(null);
     setForm(emptyForm);
     setShowForm(true);
@@ -55,10 +59,17 @@ export default function AdminProductsPage() {
 
   async function saveProduct(e: React.FormEvent) {
     e.preventDefault();
+    const parsed = productFormSchema.safeParse(form);
+    if (!parsed.success) {
+      setFormError(firstIssueMessage(parsed.error));
+      return;
+    }
+    setFormError(null);
+
     if (editingId) {
-      await supabase.from("products").update(form).eq("id", editingId);
+      await supabase.from("products").update(parsed.data).eq("id", editingId);
     } else {
-      await supabase.from("products").insert(form);
+      await supabase.from("products").insert(parsed.data);
     }
     setShowForm(false);
     load();
@@ -156,6 +167,7 @@ export default function AdminProductsPage() {
             />
             Mark as new arrival
           </label>
+          {formError && <p className="form-error">{formError}</p>}
           <div className="address-form-actions">
             <button className="button" type="submit">
               Save

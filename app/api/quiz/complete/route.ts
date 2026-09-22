@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkAndIncrementUsage, getRateLimitIdentity } from "@/lib/rateLimit";
 import { tropes, type TropeSlug } from "@/lib/quizTropes";
+import { firstIssueMessage, quizCompleteSchema } from "@/lib/validation";
 
 const QUIZ_DAILY_LIMIT = 2;
 
 export async function POST(request: Request) {
-  const { trope } = (await request.json()) as { trope?: TropeSlug };
-  if (!trope || !tropes[trope]) {
+  const parsed = quizCompleteSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
+  }
+  const trope = parsed.data.trope as TropeSlug;
+  if (!tropes[trope]) {
     return NextResponse.json({ error: "Invalid trope." }, { status: 400 });
   }
 

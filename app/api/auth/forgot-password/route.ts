@@ -3,10 +3,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { passwordResetEmail } from "@/lib/email/templates";
 import { SITE_URL } from "@/lib/site";
+import { firstIssueMessage, forgotPasswordSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
-  const { email } = await request.json();
-  if (!email) return NextResponse.json({ error: "Missing email" }, { status: 400 });
+  const parsed = forgotPasswordSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
+  }
+  const { email } = parsed.data;
 
   const supabaseAdmin = createAdminClient();
   const { data, error } = await supabaseAdmin.auth.admin.generateLink({

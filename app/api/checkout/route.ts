@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { getStripeClient } from "@/lib/stripe";
+import { checkoutSchema, firstIssueMessage } from "@/lib/validation";
 
 export async function POST(request: Request) {
   const apiKey = process.env.STRIPE_SECRET_KEY;
@@ -21,12 +22,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please log in to check out." }, { status: 401 });
   }
 
-  const { items } = (await request.json()) as {
-    items: { productId: string; quantity: number; size: string | null }[];
-  };
-  if (!Array.isArray(items) || items.length === 0) {
-    return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
+  const parsed = checkoutSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
   }
+  const { items } = parsed.data;
 
   const { data: products } = await supabase
     .from("products")
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
           },
           unit_amount: product.price_cents,
         },
-        quantity: Math.max(1, item.quantity ?? 1),
+        quantity: item.quantity,
       },
     ];
   });

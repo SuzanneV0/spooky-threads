@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
+import { firstIssueMessage, reviewSchema } from "@/lib/validation";
 
 type Review = Tables<"reviews">;
 
@@ -36,10 +37,17 @@ export default function ReviewSection({
       setStatus("Log in to leave a review.");
       return;
     }
+
+    const parsed = reviewSchema.safeParse({ rating, title, body });
+    if (!parsed.success) {
+      setStatus(firstIssueMessage(parsed.error));
+      return;
+    }
+
     const { data, error } = await supabase
       .from("reviews")
       .upsert(
-        { product_id: productId, user_id: user.id, rating, title, body },
+        { product_id: productId, user_id: user.id, ...parsed.data },
         { onConflict: "product_id,user_id" }
       )
       .select()
@@ -84,7 +92,13 @@ export default function ReviewSection({
           ))}
         </select>
         <label htmlFor="review-title">Title</label>
-        <input id="review-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Great fit!" />
+        <input
+          id="review-title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Great fit!"
+          maxLength={120}
+        />
         <label htmlFor="review-body">Review</label>
         <textarea
           id="review-body"
@@ -92,6 +106,7 @@ export default function ReviewSection({
           onChange={(e) => setBody(e.target.value)}
           rows={3}
           placeholder="Tell other shoppers what you think..."
+          maxLength={2000}
         />
         <button className="button" type="submit">
           Submit review

@@ -3,8 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getProductCatalogForAssistant } from "@/lib/queries";
 import { SITE_NAME } from "@/lib/site";
 import { checkAndIncrementUsage, getRateLimitIdentity, type RateLimitIdentity } from "@/lib/rateLimit";
-
-type ChatMessage = { role: "user" | "assistant"; content: string };
+import { chatSchema, firstIssueMessage } from "@/lib/validation";
 
 const CHAT_DAILY_LIMIT = 5;
 
@@ -44,10 +43,11 @@ export async function POST(request: Request) {
     });
   }
 
-  const { messages } = (await request.json()) as { messages: ChatMessage[] };
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: "No messages provided." }, { status: 400 });
+  const parsed = chatSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstIssueMessage(parsed.error) }, { status: 400 });
   }
+  const { messages } = parsed.data;
 
   const identity = await getRateLimitIdentity();
   const allowed = await checkAndIncrementUsage(identity.identifier, "chat", CHAT_DAILY_LIMIT);

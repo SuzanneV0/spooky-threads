@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
+import { addressSchema, firstIssueMessage } from "@/lib/validation";
 
 type Address = Tables<"addresses">;
 
@@ -23,6 +24,7 @@ export default function AddressesPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function load() {
@@ -43,7 +45,17 @@ export default function AddressesPage() {
   async function addAddress(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    await supabase.from("addresses").insert({ ...form, user_id: user.id, is_default: addresses.length === 0 });
+
+    const parsed = addressSchema.safeParse(form);
+    if (!parsed.success) {
+      setFormError(firstIssueMessage(parsed.error));
+      return;
+    }
+    setFormError(null);
+
+    await supabase
+      .from("addresses")
+      .insert({ ...parsed.data, user_id: user.id, is_default: addresses.length === 0 });
     setForm(emptyForm);
     setShowForm(false);
     load();
@@ -95,7 +107,13 @@ export default function AddressesPage() {
       </div>
 
       {!showForm && (
-        <button className="button" onClick={() => setShowForm(true)}>
+        <button
+          className="button"
+          onClick={() => {
+            setFormError(null);
+            setShowForm(true);
+          }}
+        >
           Add address
         </button>
       )}
@@ -134,6 +152,7 @@ export default function AddressesPage() {
               />
             </div>
           </div>
+          {formError && <p className="form-error">{formError}</p>}
           <div className="address-form-actions">
             <button className="button" type="submit">
               Save address
