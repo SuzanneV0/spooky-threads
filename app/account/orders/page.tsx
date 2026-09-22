@@ -38,9 +38,7 @@ export default function OrdersPage() {
       {orders === null ? (
         <p>Loading...</p>
       ) : orders.length === 0 ? (
-        <p style={{ color: "var(--color-muted-text)" }}>
-          No orders yet — once checkout is wired up, your orders will show up here.
-        </p>
+        <p style={{ color: "var(--color-muted-text)" }}>No orders yet — your orders will show up here once you check out.</p>
       ) : (
         <ul className="order-list">
           {orders.map((order) => (
