@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { getStripeClient } from "@/lib/stripe";
 
 export async function POST() {
   const apiKey = process.env.STRIPE_SECRET_KEY;
@@ -30,7 +30,7 @@ export async function POST() {
     return NextResponse.json({ error: "You don't have an active subscription." }, { status: 400 });
   }
 
-  const stripe = new Stripe(apiKey);
+  const stripe = getStripeClient(apiKey);
 
   try {
     await stripe.subscriptions.cancel(profile.stripe_subscription_id);

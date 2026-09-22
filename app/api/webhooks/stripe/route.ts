@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { orderConfirmationEmail } from "@/lib/email/templates";
+import { getStripeClient } from "@/lib/stripe";
 
 async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Checkout.Session) {
   const supabaseAdmin = createAdminClient();
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook not configured." }, { status: 503 });
   }
 
-  const stripe = new Stripe(apiKey);
+  const stripe = getStripeClient(apiKey);
   const signature = request.headers.get("stripe-signature");
   const body = await request.text();
 

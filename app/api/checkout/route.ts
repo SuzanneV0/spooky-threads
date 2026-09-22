@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   const apiKey = process.env.STRIPE_SECRET_KEY;
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   }
 
   const origin = new URL(request.url).origin;
-  const stripe = new Stripe(apiKey);
+  const stripe = getStripeClient(apiKey);
 
   try {
     const session = await stripe.checkout.sessions.create({
