@@ -224,6 +224,127 @@ label {
   white-space: nowrap;
 }
 
+/* On desktop the menu wrapper is invisible to layout, so the nav and
+   actions sit directly in the header row; the hamburger pieces are hidden. */
+.header-menu {
+  display: contents;
+}
+.header-cart-mobile,
+.menu-toggle,
+.nav-expand {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .header-cart-mobile {
+    display: inline-block;
+  }
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 1.5px solid rgba(230, 221, 206, 0.35);
+    border-radius: 10px;
+    color: var(--color-header-text);
+    cursor: pointer;
+  }
+  .menu-toggle:hover {
+    border-color: var(--color-header-text);
+  }
+  .header-menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(230, 221, 206, 0.2);
+  }
+  .header-menu.open {
+    display: flex;
+  }
+  .main-nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .nav-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid rgba(230, 221, 206, 0.12);
+  }
+  .nav-item > a {
+    flex: 1;
+    padding: 0.85rem 0;
+    font-size: 1rem;
+  }
+  .nav-expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-header-text);
+    cursor: pointer;
+  }
+  .nav-expand svg {
+    transition: transform 0.15s ease;
+  }
+  .nav-item.expanded .nav-expand svg {
+    transform: rotate(180deg);
+  }
+  /* Hover doesn't exist on touch screens, so sub-links open via the chevron. */
+  .nav-item:hover .dropdown,
+  .nav-item:focus-within .dropdown {
+    display: none;
+  }
+  .nav-item.expanded .dropdown {
+    display: block;
+  }
+  .dropdown {
+    position: static;
+    flex-basis: 100%;
+    min-width: 0;
+    padding: 0 0 0.5rem 1rem;
+    background: transparent;
+    box-shadow: none;
+  }
+  .dropdown a {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.95rem;
+    color: var(--color-header-text);
+  }
+  .dropdown a:hover {
+    background: rgba(230, 221, 206, 0.1);
+  }
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding-bottom: 0.5rem;
+  }
+  .header-actions .header-link {
+    padding: 0.85rem 0;
+    font-size: 1rem;
+  }
+  .header-actions .cart-link {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.1rem;
+  }
+}
+
 .site-footer {
   background: var(--color-header-bg);
   color: var(--color-header-text);
