@@ -1,8 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { useUser } from "@clerk/nextjs";
 
 type Profile = {
   id: string;
@@ -12,8 +11,10 @@ type Profile = {
   subscription_tier: string | null;
 };
 
+type AuthUser = { id: string; email: string | null };
+
 type AuthContextValue = {
-  user: User | null;
+  user: AuthUser | null;
   profile: Profile | null;
   loading: boolean;
   refresh: () => Promise<void>;
@@ -26,43 +27,42 @@ const AuthContext = createContext<AuthContextValue>({
   refresh: async () => {},
 });
 
+// Clerk owns the session; this adds the shopper's profile row from our own database on top.
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  const userId = isSignedIn && clerkUser ? clerkUser.id : null;
+  const email = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
+  // Stable object, so pages that re-fetch when `user` changes don't loop on every render.
+  const user = useMemo<AuthUser | null>(() => (userId ? { id: userId, email } : null), [userId, email]);
 
   const load = useCallback(async () => {
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    setUser(currentUser);
-
-    if (currentUser) {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, full_name, is_admin, halloween_trope, subscription_tier")
-        .eq("id", currentUser.id)
-        .single();
-      setProfile(profileData);
-    } else {
+    if (!isSignedIn) {
       setProfile(null);
+      setProfileLoaded(true);
+      return;
     }
-    setLoading(false);
-  }, [supabase]);
+    try {
+      const res = await fetch("/api/me", { cache: "no-store" });
+      const data = await res.json();
+      setProfile(data.profile ?? null);
+    } catch {
+      setProfile(null);
+    } finally {
+      setProfileLoaded(true);
+    }
+  }, [isSignedIn]);
 
   useEffect(() => {
+    if (!isLoaded) return;
+    setProfileLoaded(false);
     load();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      load();
-    });
-    return () => subscription.unsubscribe();
-  }, [load, supabase]);
+  }, [isLoaded, userId, load]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, refresh: load }}>
+    <AuthContext.Provider value={{ user, profile, loading: !isLoaded || !profileLoaded, refresh: load }}>
       {children}
     </AuthContext.Provider>
   );

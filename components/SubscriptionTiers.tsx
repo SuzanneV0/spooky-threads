@@ -101,7 +101,7 @@ export default function SubscriptionTiers({ tiers }: { tiers: Tier[] }) {
                 ))}
               </ul>
               {!user ? (
-                <Link href="/login" className="button pricing-cta">
+                <Link href="/sign-in" className="button pricing-cta">
                   Log in to subscribe
                 </Link>
               ) : isCurrent ? (

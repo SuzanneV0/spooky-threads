@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
+import { getUserEmail, getUserId } from "@/lib/auth";
+import { all, placeholders } from "@/lib/db/client";
 import { getStripeClient } from "@/lib/stripe";
 import { checkoutSchema, firstIssueMessage } from "@/lib/validation";
 
@@ -13,12 +14,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = await getUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json({ error: "Please log in to check out." }, { status: 401 });
   }
 
@@ -28,15 +26,13 @@ export async function POST(request: Request) {
   }
   const { items } = parsed.data;
 
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, name, price_cents")
-    .in(
-      "id",
-      items.map((i) => i.productId)
-    );
+  const productIds = items.map((i) => i.productId);
+  const products = await all<{ id: string; name: string; price_cents: number }>(
+    `SELECT id, name, price_cents FROM products WHERE id IN (${placeholders(productIds.length)})`,
+    productIds
+  );
 
-  if (!products || products.length === 0) {
+  if (products.length === 0) {
     return NextResponse.json({ error: "Those items are no longer available." }, { status: 400 });
   }
 
@@ -74,9 +70,9 @@ export async function POST(request: Request) {
       line_items: lineItems,
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart?canceled=1`,
-      customer_email: user.email ?? undefined,
-      client_reference_id: user.id,
-      metadata: { user_id: user.id },
+      customer_email: await getUserEmail(),
+      client_reference_id: userId,
+      metadata: { user_id: userId },
       shipping_address_collection: { allowed_countries: ["US"] },
     });
 

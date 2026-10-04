@@ -2,26 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 
 export default function AdminOverview() {
   const [counts, setCounts] = useState<{ products: number; orders: number; users: number } | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     (async () => {
-      const [products, orders, users] = await Promise.all([
-        supabase.from("products").select("id", { count: "exact", head: true }),
-        supabase.from("orders").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-      ]);
-      setCounts({
-        products: products.count ?? 0,
-        orders: orders.count ?? 0,
-        users: users.count ?? 0,
-      });
+      const res = await fetch("/api/admin/stats", { cache: "no-store" }).catch(() => null);
+      setCounts(res?.ok ? await res.json() : { products: 0, orders: 0, users: 0 });
     })();
-  }, [supabase]);
+  }, []);
 
   return (
     <div>

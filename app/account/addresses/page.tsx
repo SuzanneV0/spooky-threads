@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
-import type { Tables } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/db/types";
 import { addressSchema, firstIssueMessage } from "@/lib/validation";
 
 type Address = Tables<"addresses">;
@@ -25,16 +24,11 @@ export default function AddressesPage() {
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const supabase = createClient();
 
   async function load() {
     if (!user) return;
-    const { data } = await supabase
-      .from("addresses")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("is_default", { ascending: false });
-    setAddresses(data ?? []);
+    const res = await fetch("/api/account/addresses", { cache: "no-store" }).catch(() => null);
+    setAddresses(res?.ok ? (await res.json()).addresses : []);
   }
 
   useEffect(() => {
@@ -53,23 +47,28 @@ export default function AddressesPage() {
     }
     setFormError(null);
 
-    await supabase
-      .from("addresses")
-      .insert({ ...parsed.data, user_id: user.id, is_default: addresses.length === 0 });
+    const res = await fetch("/api/account/addresses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsed.data),
+    }).catch(() => null);
+    if (!res?.ok) {
+      setFormError((await res?.json().catch(() => null))?.error ?? "Something went wrong saving the address.");
+      return;
+    }
     setForm(emptyForm);
     setShowForm(false);
     load();
   }
 
   async function removeAddress(id: string) {
-    await supabase.from("addresses").delete().eq("id", id);
+    await fetch(`/api/account/addresses/${id}`, { method: "DELETE" });
     load();
   }
 
   async function makeDefault(id: string) {
     if (!user) return;
-    await supabase.from("addresses").update({ is_default: false }).eq("user_id", user.id);
-    await supabase.from("addresses").update({ is_default: true }).eq("id", id);
+    await fetch(`/api/account/addresses/${id}`, { method: "PATCH" });
     load();
   }
 

@@ -97,7 +97,7 @@ export default function CartPage() {
             {checkingOut ? "Redirecting…" : "Checkout"}
           </button>
         ) : (
-          <Link href="/login" className="button">
+          <Link href="/sign-in" className="button">
             Log in to checkout
           </Link>
         )}

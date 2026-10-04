@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useClerk } from "@clerk/nextjs";
 
 const links = [
   { href: "/account", label: "Overview" },
@@ -15,10 +15,10 @@ const links = [
 export default function AccountNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
+  const { signOut } = useClerk();
 
   async function logout() {
-    await supabase.auth.signOut();
+    await signOut();
     router.push("/");
     router.refresh();
   }

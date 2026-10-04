@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { all } from "@/lib/db/client";
 import { SITE_URL } from "@/lib/site";
 
 const staticRoutes = [
@@ -26,11 +26,9 @@ const whimsicalGothRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient();
-
-  const [{ data: collections }, { data: products }] = await Promise.all([
-    supabase.from("collections").select("slug"),
-    supabase.from("products").select("slug, created_at"),
+  const [collections, products] = await Promise.all([
+    all<{ slug: string }>("SELECT slug FROM collections"),
+    all<{ slug: string; created_at: string }>("SELECT slug, created_at FROM products"),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((path) => ({

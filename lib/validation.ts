@@ -18,14 +18,6 @@ export const contactMessageSchema = z.object({
   recaptchaToken: z.string().optional(),
 });
 
-export const forgotPasswordSchema = z.object({
-  email: emailSchema,
-});
-
-export const welcomeEmailSchema = z.object({
-  userId: z.string().uuid("Invalid user id"),
-});
-
 export const checkoutItemSchema = z.object({
   productId: z.string().uuid("Invalid product id"),
   quantity: z.coerce.number().int().min(1).max(20),

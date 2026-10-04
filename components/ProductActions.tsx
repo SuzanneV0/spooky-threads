@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
 import { APPAREL_SIZES, requiresSize } from "@/lib/sizes";
 import type { Product } from "@/lib/queries";
 
@@ -13,7 +12,6 @@ export default function ProductActions({ product }: { product: Product }) {
   const [listStatus, setListStatus] = useState<string | null>(null);
   const { addItem } = useCart();
   const { user } = useAuth();
-  const supabase = createClient();
 
   const needsSize = requiresSize(product.product_type);
   const canAddToCart = !needsSize || size !== "";
@@ -23,10 +21,12 @@ export default function ProductActions({ product }: { product: Product }) {
       setListStatus("Log in to save items.");
       return;
     }
-    const { error } = await supabase
-      .from("user_product_lists")
-      .upsert({ user_id: user.id, product_id: product.id, kind }, { onConflict: "user_id,product_id,kind" });
-    setListStatus(error ? "Something went wrong." : kind === "saved" ? "Saved for later." : "Added to wishlist.");
+    const res = await fetch("/api/lists", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: product.id, kind }),
+    }).catch(() => null);
+    setListStatus(!res?.ok ? "Something went wrong." : kind === "saved" ? "Saved for later." : "Added to wishlist.");
   }
 
   return (

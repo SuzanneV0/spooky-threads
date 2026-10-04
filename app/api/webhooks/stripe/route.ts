@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { db, newId, run } from "@/lib/db/client";
 import { sendEmail } from "@/lib/email/send";
 import { orderConfirmationEmail } from "@/lib/email/templates";
 import { getStripeClient } from "@/lib/stripe";
 
 async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Checkout.Session) {
-  const supabaseAdmin = createAdminClient();
-
   if (session.mode === "subscription") {
     const userId = session.metadata?.user_id;
     const tierSlug = session.metadata?.tier_slug;
@@ -17,14 +15,13 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
     const subscriptionId =
       typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
-    await supabaseAdmin
-      .from("profiles")
-      .update({
-        subscription_tier: tierSlug,
-        stripe_customer_id: customerId ?? null,
-        stripe_subscription_id: subscriptionId ?? null,
-      })
-      .eq("id", userId);
+    // Upsert, in case the shopper paid before their profile row was ever created.
+    await run(
+      `INSERT INTO profiles (id, subscription_tier, stripe_customer_id, stripe_subscription_id) VALUES (?, ?, ?, ?)
+       ON CONFLICT (id) DO UPDATE SET subscription_tier = excluded.subscription_tier,
+         stripe_customer_id = excluded.stripe_customer_id, stripe_subscription_id = excluded.stripe_subscription_id`,
+      [userId, tierSlug, customerId ?? null, subscriptionId ?? null]
+    );
 
     // Now that the new subscription is confirmed active, cancel whatever
     // plan they were switching from. Doing this only now — never before —
@@ -51,29 +48,16 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
   const shipping = session.collected_information?.shipping_details ?? session.shipping_details;
   const address = shipping?.address ?? session.customer_details?.address;
 
-  const { data: order, error: orderError } = await supabaseAdmin
-    .from("orders")
-    .insert({
-      user_id: userId,
-      status: "paid",
-      total_cents: session.amount_total ?? 0,
-      shipping_address: {
-        name: shipping?.name ?? session.customer_details?.name ?? "",
-        line1: address?.line1 ?? "",
-        line2: address?.line2 ?? "",
-        city: address?.city ?? "",
-        state: address?.state ?? "",
-        postal_code: address?.postal_code ?? "",
-        country: address?.country ?? "",
-      },
-    })
-    .select()
-    .single();
-
-  if (orderError || !order) {
-    console.error("Failed to create order from Stripe session:", orderError);
-    return;
-  }
+  const order = { id: newId(), total_cents: session.amount_total ?? 0 };
+  const shippingAddress = {
+    name: shipping?.name ?? session.customer_details?.name ?? "",
+    line1: address?.line1 ?? "",
+    line2: address?.line2 ?? "",
+    city: address?.city ?? "",
+    state: address?.state ?? "",
+    postal_code: address?.postal_code ?? "",
+    country: address?.country ?? "",
+  };
 
   const orderItems = lineItems.data.map((item) => {
     const product = item.price?.product;
@@ -91,9 +75,24 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
     };
   });
 
-  const { error: itemsError } = await supabaseAdmin.from("order_items").insert(orderItems);
-  if (itemsError) {
-    console.error("Failed to create order items from Stripe session:", itemsError);
+  // The order and its items are written together, so a failure never leaves half an order.
+  try {
+    await db().batch(
+      [
+        {
+          sql: "INSERT INTO orders (id, user_id, status, total_cents, shipping_address) VALUES (?, ?, 'paid', ?, ?)",
+          args: [order.id, userId, order.total_cents, JSON.stringify(shippingAddress)],
+        },
+        ...orderItems.map((item) => ({
+          sql: "INSERT INTO order_items (id, order_id, product_id, product_name, price_cents, quantity) VALUES (?, ?, ?, ?, ?, ?)",
+          args: [newId(), item.order_id, item.product_id, item.product_name, item.price_cents, item.quantity],
+        })),
+      ],
+      "write"
+    );
+  } catch (error) {
+    console.error("Failed to create order from Stripe session:", error);
+    return;
   }
 
   const customerEmail = session.customer_details?.email;
@@ -112,19 +111,17 @@ async function handleCheckoutSessionCompleted(stripe: Stripe, session: Stripe.Ch
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  const supabaseAdmin = createAdminClient();
-  await supabaseAdmin
-    .from("profiles")
-    .update({ subscription_tier: null, stripe_subscription_id: null })
-    .eq("stripe_subscription_id", subscription.id);
+  await run(
+    "UPDATE profiles SET subscription_tier = NULL, stripe_subscription_id = NULL WHERE stripe_subscription_id = ?",
+    [subscription.id]
+  );
 }
 
 export async function POST(request: Request) {
   const apiKey = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!apiKey || !webhookSecret || !serviceRoleKey) {
+  if (!apiKey || !webhookSecret) {
     console.error("Stripe webhook received but checkout isn't fully configured.");
     return NextResponse.json({ error: "Webhook not configured." }, { status: 503 });
   }

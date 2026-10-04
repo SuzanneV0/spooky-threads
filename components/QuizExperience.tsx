@@ -3,31 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/lib/queries";
 import { quizQuestions, tallyResult, tropes, type TropeSlug } from "@/lib/quizTropes";
 
 async function fetchRecommendations(tropeSlug: TropeSlug): Promise<Product[]> {
-  const supabase = createClient();
-  const { data: collection } = await supabase
-    .from("collections")
-    .select("id")
-    .eq("slug", tropeSlug)
-    .single();
-  if (!collection) return [];
-
-  const { data: links } = await supabase
-    .from("product_collections")
-    .select("product_id")
-    .eq("collection_id", collection.id)
-    .limit(4);
-
-  const ids = (links ?? []).map((l) => l.product_id);
-  if (ids.length === 0) return [];
-
-  const { data: products } = await supabase.from("products").select("*").in("id", ids).limit(4);
-  return products ?? [];
+  const res = await fetch(`/api/recommendations?trope=${tropeSlug}`).catch(() => null);
+  return res?.ok ? (await res.json()).products : [];
 }
 
 export default function QuizExperience() {
@@ -147,7 +129,7 @@ export default function QuizExperience() {
             </>
           ) : (
             <p className="quiz-result-note">
-              <Link href="/login">Log in</Link> to save this result to your profile.
+              <Link href="/sign-in">Log in</Link> to save this result to your profile.
             </p>
           )}
           <button className="button secondary small" onClick={retake}>

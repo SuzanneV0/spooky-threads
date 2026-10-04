@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { Tables, Enums } from "@/lib/supabase/types";
+import type { Tables, Enums } from "@/lib/db/types";
 
 type Order = Tables<"orders">;
 type OrderStatus = Enums<"order_status">;
@@ -11,11 +10,10 @@ const statuses: OrderStatus[] = ["pending", "paid", "shipped", "delivered", "can
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const supabase = createClient();
 
   async function load() {
-    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
-    setOrders(data ?? []);
+    const res = await fetch("/api/admin/orders", { cache: "no-store" }).catch(() => null);
+    setOrders(res?.ok ? (await res.json()).orders : []);
   }
 
   useEffect(() => {
@@ -24,7 +22,11 @@ export default function AdminOrdersPage() {
   }, []);
 
   async function updateStatus(id: string, status: OrderStatus) {
-    await supabase.from("orders").update({ status }).eq("id", id);
+    await fetch("/api/admin/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
     load();
   }
 

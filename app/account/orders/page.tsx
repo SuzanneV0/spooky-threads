@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
-import type { Tables } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/db/types";
 
 type Order = Tables<"orders"> & { order_items: Tables<"order_items">[] };
 
@@ -18,19 +17,14 @@ const statusLabel: Record<string, string> = {
 export default function OrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("*, order_items(*)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      setOrders((data as Order[]) ?? []);
+      const res = await fetch("/api/account/orders", { cache: "no-store" }).catch(() => null);
+      setOrders(res?.ok ? (await res.json()).orders : []);
     })();
-  }, [user, supabase]);
+  }, [user]);
 
   return (
     <div>

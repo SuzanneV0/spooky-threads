@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getOrCreateProfile, getUserEmail, getUserId } from "@/lib/auth";
 import { getTierBySlug } from "@/lib/subscriptionTiers";
 import { getStripeClient } from "@/lib/stripe";
 import { firstIssueMessage, subscribeSchema } from "@/lib/validation";
@@ -13,12 +13,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = await getUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json({ error: "Please log in to subscribe." }, { status: 401 });
   }
 
@@ -31,11 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown subscription tier." }, { status: 400 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id, stripe_subscription_id")
-    .eq("id", user.id)
-    .single();
+  const profile = await getOrCreateProfile(userId);
 
   const origin = new URL(request.url).origin;
   const stripe = getStripeClient(apiKey);
@@ -63,17 +56,17 @@ export async function POST(request: Request) {
       // doesn't create a duplicate customer record for the same person.
       ...(profile?.stripe_customer_id
         ? { customer: profile.stripe_customer_id }
-        : { customer_email: user.email ?? undefined }),
-      client_reference_id: user.id,
+        : { customer_email: await getUserEmail() }),
+      client_reference_id: userId,
       metadata: {
-        user_id: user.id,
+        user_id: userId,
         tier_slug: tier.slug,
         // Carried through so the webhook can cancel the old plan once the
         // new one is confirmed paid — never before, so an abandoned
         // checkout never leaves the customer with no active subscription.
         previous_subscription_id: profile?.stripe_subscription_id ?? "",
       },
-      subscription_data: { metadata: { user_id: user.id, tier_slug: tier.slug } },
+      subscription_data: { metadata: { user_id: userId, tier_slug: tier.slug } },
     });
 
     return NextResponse.json({ url: session.url });

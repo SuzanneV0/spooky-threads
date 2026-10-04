@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getProfile, getUserId } from "@/lib/auth";
+import { run } from "@/lib/db/client";
 import { getStripeClient } from "@/lib/stripe";
 
 export async function POST() {
@@ -11,20 +12,13 @@ export async function POST() {
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = await getUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json({ error: "Please log in to manage your subscription." }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("stripe_subscription_id")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(userId);
 
   if (!profile?.stripe_subscription_id) {
     return NextResponse.json({ error: "You don't have an active subscription." }, { status: 400 });
@@ -39,10 +33,7 @@ export async function POST() {
     return NextResponse.json({ error: "Something went wrong cancelling your subscription. Please try again." }, { status: 502 });
   }
 
-  await supabase
-    .from("profiles")
-    .update({ subscription_tier: null, stripe_subscription_id: null })
-    .eq("id", user.id);
+  await run("UPDATE profiles SET subscription_tier = NULL, stripe_subscription_id = NULL WHERE id = ?", [userId]);
 
   return NextResponse.json({ ok: true });
 }

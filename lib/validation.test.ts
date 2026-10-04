@@ -4,12 +4,10 @@ import {
   chatSchema,
   checkoutSchema,
   contactMessageSchema,
-  forgotPasswordSchema,
   productFormSchema,
   quizCompleteSchema,
   reviewSchema,
   subscribeSchema,
-  welcomeEmailSchema,
 } from "@/lib/validation";
 
 // A schema that fails should surface a useful message, and one that
@@ -243,23 +241,5 @@ describe("productFormSchema", () => {
 
   it("rejects a product type outside the known dropdown options", () => {
     expect(productFormSchema.safeParse({ ...validProduct, product_type: "cauldron" }).success).toBe(false);
-  });
-});
-
-describe("forgotPasswordSchema and welcomeEmailSchema", () => {
-  it("accepts a valid email for password reset", () => {
-    expect(forgotPasswordSchema.safeParse({ email: "ada@example.com" }).success).toBe(true);
-  });
-
-  it("rejects an invalid email for password reset", () => {
-    expect(forgotPasswordSchema.safeParse({ email: "nope" }).success).toBe(false);
-  });
-
-  it("accepts a valid user id for the welcome email", () => {
-    expect(welcomeEmailSchema.safeParse({ userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6" }).success).toBe(true);
-  });
-
-  it("rejects a non-UUID user id for the welcome email", () => {
-    expect(welcomeEmailSchema.safeParse({ userId: "not-a-uuid" }).success).toBe(false);
   });
 });

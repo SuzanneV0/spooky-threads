@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
-import type { Tables } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/db/types";
 import { firstIssueMessage, reviewSchema } from "@/lib/validation";
 
 type Review = Tables<"reviews">;
@@ -25,7 +24,6 @@ export default function ReviewSection({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<string | null>(null);
-  const supabase = createClient();
 
   const average = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -44,16 +42,14 @@ export default function ReviewSection({
       return;
     }
 
-    const { data, error } = await supabase
-      .from("reviews")
-      .upsert(
-        { product_id: productId, user_id: user.id, ...parsed.data },
-        { onConflict: "product_id,user_id" }
-      )
-      .select()
-      .single();
+    const res = await fetch("/api/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId, ...parsed.data }),
+    }).catch(() => null);
+    const data = res?.ok ? ((await res.json()).review as Review) : null;
 
-    if (error) {
+    if (!data) {
       setStatus("Something went wrong submitting your review.");
       return;
     }

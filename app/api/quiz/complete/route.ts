@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getProfile, getUserId } from "@/lib/auth";
+import { run } from "@/lib/db/client";
 import { checkAndIncrementUsage, getRateLimitIdentity } from "@/lib/rateLimit";
 import { tropes, type TropeSlug } from "@/lib/quizTropes";
 import { firstIssueMessage, quizCompleteSchema } from "@/lib/validation";
@@ -16,18 +17,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid trope." }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userId = await getUserId();
 
   let hasUnlimitedAccess = false;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("subscription_tier")
-      .eq("id", user.id)
-      .single();
+  if (userId) {
+    const profile = await getProfile(userId);
     hasUnlimitedAccess = !!profile?.subscription_tier;
   }
 
@@ -60,8 +54,8 @@ export async function POST(request: Request) {
     return response;
   }
 
-  if (user) {
-    await supabase.from("profiles").update({ halloween_trope: trope }).eq("id", user.id);
+  if (userId) {
+    await run("UPDATE profiles SET halloween_trope = ? WHERE id = ?", [trope, userId]);
   }
 
   return response;

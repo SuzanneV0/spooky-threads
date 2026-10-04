@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { Tables } from "@/lib/supabase/types";
+import type { Tables } from "@/lib/db/types";
 import { firstIssueMessage, productFormSchema } from "@/lib/validation";
 
 type Product = Tables<"products">;
@@ -23,11 +22,10 @@ export default function AdminProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const supabase = createClient();
 
   async function load() {
-    const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-    setProducts(data ?? []);
+    const res = await fetch("/api/admin/products", { cache: "no-store" }).catch(() => null);
+    setProducts(res?.ok ? (await res.json()).products : []);
   }
 
   useEffect(() => {
@@ -66,17 +64,21 @@ export default function AdminProductsPage() {
     }
     setFormError(null);
 
-    if (editingId) {
-      await supabase.from("products").update(parsed.data).eq("id", editingId);
-    } else {
-      await supabase.from("products").insert(parsed.data);
+    const res = await fetch(editingId ? `/api/admin/products/${editingId}` : "/api/admin/products", {
+      method: editingId ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsed.data),
+    }).catch(() => null);
+    if (!res?.ok) {
+      setFormError((await res?.json().catch(() => null))?.error ?? "Something went wrong saving the product.");
+      return;
     }
     setShowForm(false);
     load();
   }
 
   async function deleteProduct(id: string) {
-    await supabase.from("products").delete().eq("id", id);
+    await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
     load();
   }
 

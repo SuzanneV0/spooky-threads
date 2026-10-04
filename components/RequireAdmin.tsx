@@ -10,7 +10,7 @@ export default function RequireAdmin({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (loading) return;
-    if (!user) router.replace("/login");
+    if (!user) router.replace("/sign-in");
     else if (!profile?.is_admin) router.replace("/account");
   }, [loading, user, profile, router]);
 
