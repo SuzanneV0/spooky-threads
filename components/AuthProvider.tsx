@@ -5,13 +5,12 @@ import { useUser } from "@clerk/nextjs";
 
 type Profile = {
   id: string;
-  full_name: string | null;
   is_admin: boolean;
   halloween_trope: string | null;
   subscription_tier: string | null;
 };
 
-type AuthUser = { id: string; email: string | null };
+type AuthUser = { id: string; email: string | null; firstName: string | null };
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -35,8 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const userId = isSignedIn && clerkUser ? clerkUser.id : null;
   const email = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
+  const firstName = clerkUser?.firstName ?? null;
   // Stable object, so pages that re-fetch when `user` changes don't loop on every render.
-  const user = useMemo<AuthUser | null>(() => (userId ? { id: userId, email } : null), [userId, email]);
+  const user = useMemo<AuthUser | null>(
+    () => (userId ? { id: userId, email, firstName } : null),
+    [userId, email, firstName]
+  );
 
   const load = useCallback(async () => {
     if (!isSignedIn) {

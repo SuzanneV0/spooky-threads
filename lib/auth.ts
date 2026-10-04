@@ -30,14 +30,16 @@ export async function getOrCreateProfile(userId: string): Promise<Profile> {
   const existing = await getProfile(userId);
   if (existing) return existing;
 
-  const user = await currentUser();
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || null;
-  const created = await run("INSERT OR IGNORE INTO profiles (id, full_name) VALUES (?, ?)", [userId, fullName]);
+  // Only the Clerk id is stored. Name and email stay with Clerk and are read from there when needed.
+  const created = await run("INSERT OR IGNORE INTO profiles (id) VALUES (?)", [userId]);
 
-  const email = user?.primaryEmailAddress?.emailAddress;
-  if (created.rowsAffected > 0 && email) {
-    const { subject, html } = welcomeEmail({ name: fullName ?? "" });
-    await sendEmail({ to: email, subject, html });
+  if (created.rowsAffected > 0) {
+    const user = await currentUser();
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (email) {
+      const { subject, html } = welcomeEmail({ name: user?.firstName ?? "" });
+      await sendEmail({ to: email, subject, html });
+    }
   }
 
   return (await getProfile(userId))!;

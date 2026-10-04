@@ -6,6 +6,6 @@ export async function GET() {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ profile: null });
 
-  const { id, full_name, is_admin, halloween_trope, subscription_tier } = await getOrCreateProfile(userId);
-  return NextResponse.json({ profile: { id, full_name, is_admin, halloween_trope, subscription_tier } });
+  const { id, is_admin, halloween_trope, subscription_tier } = await getOrCreateProfile(userId);
+  return NextResponse.json({ profile: { id, is_admin, halloween_trope, subscription_tier } });
 }

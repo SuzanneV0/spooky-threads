@@ -12,7 +12,7 @@ export default function AccountOverview() {
 
   return (
     <div>
-      <h1>Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}</h1>
+      <h1>Welcome{user?.firstName ? `, ${user.firstName}` : ""}</h1>
       <p style={{ color: "var(--color-muted-text)" }}>{user?.email}</p>
       <div className="grid cols-3" style={{ marginTop: "2rem" }}>
         <Link href="/quiz" className="card account-tile">
