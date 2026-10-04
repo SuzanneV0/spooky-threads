@@ -1,33 +1,16 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  await supabase.auth.getUser();
-
-  return response;
-}
+// Clerk keeps the session available to every page and API route. Pages and routes that need
+// a signed-in shopper or an admin check that themselves (RequireAuth, RequireAdmin, auth()).
+export default clerkMiddleware();
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    // Skip Next.js internals and static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+    // Clerk's auto-proxy path
+    "/__clerk/:path*",
+  ],
 };

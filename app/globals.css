@@ -223,6 +223,13 @@ label {
   color: var(--color-header-text);
   white-space: nowrap;
 }
+button.header-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
 
 /* On desktop the menu wrapper is invisible to layout, so the nav and
    actions sit directly in the header row; the hamburger pieces are hidden. */

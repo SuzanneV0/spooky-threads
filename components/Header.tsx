@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { mainNav } from "@/lib/nav";
 import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 
 export default function Header() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -121,9 +122,20 @@ export default function Header() {
                 Admin
               </Link>
             )}
-            <Link href={user ? "/account" : "/login"} className="header-link">
-              {user ? "Account" : "Log in"}
-            </Link>
+            <Show when="signed-out">
+              <SignInButton>
+                <button type="button" className="header-link">Log in</button>
+              </SignInButton>
+              <SignUpButton>
+                <button type="button" className="header-link">Sign up</button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <Link href="/account" className="header-link">
+                Account
+              </Link>
+              <UserButton />
+            </Show>
             <Link href="/cart" className="header-link cart-link">
               {cartLabel}
             </Link>
